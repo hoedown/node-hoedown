@@ -1,0 +1,28 @@
+{ "name": "hoedown"
+, "description": "Node bindings for Hoedown, the amazing Markdown library."
+, "keywords": ["hoedown", "sundown", "upskirt", "markdown", "smartypants"]
+, "version": "0.0.1"
+, "homepage": "https://github.com/hoedown/node-hoedown"
+
+, "author": "Xavier Mendez <jmendeth@gmail.com>"
+, "maintainers": [ "Xavier Mendez <jmendeth@gmail.com>"
+                 ]
+, "contributors": [ "Xavier Mendez <jmendeth@gmail.com>"
+                  ]
+
+, "main": "./build/Release/hoedown"
+, "engines": { "node": ">= 0.10" }
+, "directories": { "src": "src"
+                 , "doc": "doc"
+                 , "example": "example"
+                 }
+
+, "repository": { "type": "git"
+                , "url": "https://github.com/hoedown/node-hoedown.git"
+                }
+, "bugs": { "url": "https://github.com/hoedown/node-hoedown/issues" }
+
+, "licenses": [ { "type": "MIT",
+                  "url": "http://opensource.org/licenses/mit-license.php" }
+              ]
+}
