@@ -18,12 +18,14 @@ renderer("¿ÚTF? Nö **prøblem**.") //-> "<p>¿ÚTF? Nö <strong>prøblem</str
 // be sure to reuse the function for blazing speed!
 ```
 
+See some [examples](example/) and [full docs](doc/). (TODO: move following to docs)
+
 
 ## It's flexible
 
 If parsing pure Markdown and generating HTML isn't enough,
 you can pass an options object in your call to `hoedown()`.
-The object follows this structure:
+The object follows this structure (values are defaults):
 
 ```js
 hoedown({
@@ -43,9 +45,6 @@ hoedown({
   unit: 64,
   // grow output buffer to this initial size
   initialSize: 0,
-
-  // whether or not to apply SmartyPants after rendering
-  smartypants: false,
 })
 ```
 
@@ -65,7 +64,9 @@ hoedown({
     flags: 0
     // non-zero value enables TOC links
     // up to the specified header level
-    tocLevel: 0
+    tocLevel: 0,
+    // whether or not to apply SmartyPants after rendering
+    smartypants: false,
   }
 })
 ```
@@ -74,7 +75,7 @@ Where `flags` is a combination of the following flags:
 
 TODO
 
-### HTML TOC renderer
+### HTML ToC renderer
 
 Don't render the document, but a Table of Contents with links pointing
 to the document's headers. Usage:
@@ -82,10 +83,12 @@ to the document's headers. Usage:
 ```js
 hoedown({
   renderer: {
-    type: hoedown.HTMLToc,
+    type: hoedown.HTMLTOC,
     // non-zero value enables TOC links
     // up to the specified header level
-    tocLevel: 0
+    tocLevel: 0,
+    // whether or not to apply SmartyPants after rendering
+    smartypants: false,
   }
 })
 ```
@@ -97,6 +100,10 @@ hoedown({
 ... console.log("Hoedown is at version %s.", hoedown.version);
 ... }
 Hoedown is at version 3.0.0.
+
+> hoedown.smartypants("Some strange ---said him--- HTML to 'parse'...")
+"&ldquo;Some strange &mdash;said him&mdash; HTML to &lsquo;parse&rsquo;&hellip;&rdquo;"
+
 > TODO
 ```
 
@@ -114,14 +121,12 @@ Users coming from Robotskirt may notice these bindings don't offer the possibili
 of including custom callbacks in renderers, or create pure JS renderers. There are
 many reasons for that:
 
- * **Painfully slow:** the constant switches from C++ to JS decrease performance.
+ * **Painfully slow:** the constant switches between C++ and JS decrease performance.
  * **Invalid:** the callbacks had to be synchronous, which totally stopped you from
    working with asynchronous libraries, which are common.
 
 If you need further processing, it's better to process the rendered output (if it's
-HTML, you can use jsdom for instance).
-
-FIXME: mention JSON
+HTML, you can use jsdom for instance). FIXME: mention JSON
 
 **Tip:** If you need code highlighting, just include [Prism][] in your site,
 it'll automatically highlight your fenced code blocks.
@@ -131,4 +136,4 @@ it'll automatically highlight your fenced code blocks.
 [Hoedown]: https://github.com/hoedown/hoedown
 [Hoedown bugs]: https://github.com/hoedown/hoedown#help-us
 [Sundown]: https://github.com/vmg/sundown
-[Prism]: http://prismjs.org
+[Prism]: http://prismjs.com
