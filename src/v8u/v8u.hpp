@@ -43,13 +43,13 @@ namespace v8u {
   //#define __node_isolate node::node_isolate
   //#define __node_isolate info.GetIsolate()
   #define __node_isolate v8::Isolate::GetCurrent()
-  
+
   #if NODE_VERSION_AT_LEAST(0,11,9)
-    #define V8_STHROW_NR(VALUE)  __node_isolate->ThrowException(VALUE) 
+    #define V8_STHROW_NR(VALUE)  __node_isolate->ThrowException(VALUE)
   #else
     #define V8_STHROW_NR(VALUE) v8::ThrowException(VALUE)
   #endif
-  
+
   #define V8_STHROW(VALUE) {V8_STHROW_NR(VALUE); return;}
   #define V8_HANDLE_SCOPE(VARIABLE) v8::HandleScope scope (__node_isolate)
   #define V8_RET(VALUE) {info.GetReturnValue().Set(VALUE); return;}
@@ -201,15 +201,15 @@ V8_SSET(IDENTIFIER) {                                                          \
 // Type functions
 
 #if NODE_VERSION_AT_LEAST(0,11,4)
-  #define __node_handle_pollyfill
+  #define __node_handle_polyfill
 #else
-  #define __node_handle_pollyfill                                              \
-    inline v8::Handle<v8::Object> handle() {return handle_}
+  #define __node_handle_polyfill                                               \
+    inline v8::Persistent<v8::Object> persistent() {return handle_;}
 #endif
 
 #define V8_STYPE(CPP_TYPE)                                                     \
   static v8::FunctionTemplate* templ_;                                         \
-  __node_handle_pollyfill                                                      \
+  __node_handle_polyfill                                                       \
   /**
    * Returns the unique V8 v8::Object corresponding to this C++ instance.
    * For this to work, you should use V8_CL_CTOR.
@@ -223,7 +223,7 @@ V8_SSET(IDENTIFIER) {                                                          \
 
 #define V8_TYPE(CPP_TYPE)                                                      \
   static v8::FunctionTemplate* templ_;                                         \
-  __node_handle_pollyfill                                                      \
+  __node_handle_polyfill                                                       \
   /**
    * Returns the unique V8 v8::Object corresponding to this C++ instance.
    * For this to work, you should use V8_[E]CTOR.
@@ -235,7 +235,7 @@ V8_SSET(IDENTIFIER) {                                                          \
   virtual v8::Local<v8::Object> Wrapped() {                                    \
     V8_HANDLE_SCOPE(scope);                                                    \
                                                                                \
-    v8::Handle<v8::Object> handle = this->handle();                            \
+    v8::Handle<v8::Object> handle = this->persistent();                        \
     if (handle.IsEmpty()) {                                                    \
       v8::Handle<v8::Value> args [1] = {v8::External::New(this)};              \
       handle = templ_->GetFunction()->NewInstance(1,args);                     \
@@ -255,7 +255,7 @@ V8_SSET(IDENTIFIER) {                                                          \
   v8::Local<v8::Object> TYPE::Wrapped() {                                      \
     V8_HANDLE_SCOPE(scope);                                                    \
                                                                                \
-    v8::Handle<v8::Object> handle = this->handle();                            \
+    v8::Handle<v8::Object> handle = this->persistent();                        \
     if (handle.IsEmpty()) {                                                    \
       v8::Handle<v8::Value> args [1] = {v8::External::New(this)};              \
       handle = templ_->GetFunction()->NewInstance(1,args);                     \
@@ -379,12 +379,16 @@ inline v8::Handle<v8::Boolean> Bool(bool boolean) {
   return v8::Boolean::New(boolean);
 }
 
-inline v8::Local<v8::Function> Func(v8::InvocationCallback function) {
-  return v8::FunctionTemplate::New(function)->GetFunction();
+inline v8::Local<v8::Function> Func(v8::InvocationCallback function, const char* name = NULL) {
+  v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(function);
+  if (name) templ->SetClassName(v8::String::New(name));
+  return templ->GetFunction();
 }
 
-inline v8::Local<v8::FunctionTemplate> Template(v8::InvocationCallback function) {
-  return v8::FunctionTemplate::New(function);
+inline v8::Local<v8::FunctionTemplate> Template(v8::InvocationCallback function, const char* name = NULL) {
+  v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(function);
+  if (name) templ->SetClassName(v8::String::New(name));
+  return templ;
 }
 
 // Type casting/unwraping shortcuts
@@ -421,7 +425,7 @@ inline v8::Persistent<v8::Array> Arr(v8::Persistent<v8::Value> hdl) {
   return v8::Persistent<v8::Array>::Cast(hdl);
 }
 
-inline v8::Handle<v8::Function> Func(v8::Handle<v8::Value> hdl) {
+inline v8::Handle<v8::Function> Func(v8::Handle<v8::Value> hdl, const char*) {
   return v8::Handle<v8::Function>::Cast(hdl);
 }
 inline v8::Local<v8::Function> Func(v8::Local<v8::Value> hdl) {
@@ -455,7 +459,7 @@ inline bool Bool(v8::Handle<v8::Value> hdl) {
 
 #define V8_DEF_TYPE(V8_NAME)                                                   \
   templ = v8::Persistent<v8::FunctionTemplate>::New(                           \
-      v8::FunctionTemplate::New(NewInstance));                                 \
+      v8::FunctionTemplate::New(&NewInstance));                                \
   __cname = v8::String::NewSymbol(V8_NAME);                                    \
   templ->SetClassName(__cname);                                                \
   inst = templ->InstanceTemplate();                                            \
@@ -463,15 +467,15 @@ inline bool Bool(v8::Handle<v8::Value> hdl) {
   prot = templ->PrototypeTemplate();
 
 #define V8_DEF_ACC(V8_NAME, GETTER, SETTER)                                    \
-  inst->SetAccessor(v8::String::NewSymbol(V8_NAME), GETTER, SETTER)
+  inst->SetAccessor(v8::String::NewSymbol(V8_NAME), &GETTER, &SETTER)
 
 #define V8_DEF_GET(V8_NAME, GETTER)                                            \
-  inst->SetAccessor(v8::String::NewSymbol(V8_NAME), GETTER)
+  inst->SetAccessor(v8::String::NewSymbol(V8_NAME), &GETTER)
 
 //FIXME: add V8_DEF_SET
 
 #define V8_DEF_CB(V8_NAME, CPP_METHOD)                                         \
-  inst->Set(v8u::Symbol(V8_NAME), v8u::Func(CPP_METHOD))
+  inst->Set(v8u::Symbol(V8_NAME), v8u::Func(&CPP_METHOD))
 
 #define V8_INHERIT(CPP_TYPE) templ->Inherit(CPP_TYPE::templ_)
 
@@ -542,7 +546,7 @@ inline bool Bool(v8::Handle<v8::Value> hdl) {
     V8_DEF_TYPE(V8_NAME)
 
 #define NODE_TYPE_END()                                                        \
-    _templ = *templ;                                                           \
+    templ_ = *templ;                                                           \
   NODE_DEF_TYPE_END()
 
 };

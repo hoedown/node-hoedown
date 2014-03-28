@@ -42,9 +42,9 @@ public:
                            revision_(other.revision_) {}
   ~Version() {}
   V8_CTOR() {
-    int arg0 = Int(args[0]);
-    int arg1 = Int(args[1]);
-    int arg2 = Int(args[2]);
+    int arg0 = Int(info[0]);
+    int arg1 = Int(info[1]);
+    int arg2 = Int(info[2]);
 
     V8_WRAP(new Version(arg0, arg1, arg2));
   } V8_CTOR_END()
@@ -64,7 +64,7 @@ public:
   }
 
   static V8_CB(ToArray) {
-    Version* inst = Unwrap(args.This());
+    Version* inst = Unwrap(info.This());
     v8::Local<v8::Array> arr = Arr(3);
     arr->Set(0, Int(inst->major_));
     arr->Set(1, Int(inst->minor_));
@@ -73,41 +73,41 @@ public:
   } V8_CB_END()
 
   static V8_CB(ToString) {
-    Version* inst = Unwrap(args.This());
+    Version* inst = Unwrap(info.This());
     std::string ret = inst->toString();
     V8_RET(Str(ret.data(), ret.size()));
   } V8_CB_END()
 
   static V8_CB(Inspect) {
-    Version* inst = Unwrap(args.This());
+    Version* inst = Unwrap(info.This());
     std::string ret = "<Version "+inst->toString()+">";
     V8_RET(Str(ret.data(), ret.size()));
   } V8_CB_END()
 
   //Getters
-  V8_GET(GetMajor) {
+  static V8_GET(GetMajor) {
     Version* inst = Unwrap(info.Holder());
     V8_RET(Int(inst->major_));
   } V8_GET_END()
-  V8_GET(GetMinor) {
+  static V8_GET(GetMinor) {
     Version* inst = Unwrap(info.Holder());
     V8_RET(Int(inst->minor_));
   } V8_GET_END()
-  V8_GET(GetRevision) {
+  static V8_GET(GetRevision) {
     Version* inst = Unwrap(info.Holder());
     V8_RET(Int(inst->revision_));
   } V8_GET_END()
 
   //Setters
-  V8_SET(SetMajor) {
+  static V8_SET(SetMajor) {
     Version* inst = Unwrap(info.Holder());
     inst->major_ = Int(value);
   } V8_SET_END()
-  V8_SET(SetMinor) {
+  static V8_SET(SetMinor) {
     Version* inst = Unwrap(info.Holder());
     inst->minor_ = Int(value);
   } V8_SET_END()
-  V8_SET(SetRevision) {
+  static V8_SET(SetRevision) {
     Version* inst = Unwrap(info.Holder());
     inst->revision_ = Int(value);
   } V8_SET_END()
