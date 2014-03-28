@@ -1,0 +1,35 @@
+#include "v8u/v8u.hpp"
+using namespace v8;
+
+#include "autolink.hpp"
+#include "document.hpp"
+#include "escape.hpp"
+#include "html.hpp"
+
+#include "v8u/version.hpp"
+#include "hoedown/version.h"
+
+void exposeHoedownVersion(Handle<Object> target) {
+  int major, minor, revision;
+  hoedown_version(&major, &minor, &revision);
+  Local<Object> version = (new v8u::Version(major, minor, revision))->Wrapped();
+  target->Set(v8u::Symbol("version"), version);
+}
+
+
+NODE_DEF_MAIN() {
+  // create module function
+  Local<Function> func = v8u::Func(&Document::Hoedown, "hoedown");
+  target->Set(v8u::Symbol("hoedown"), func);
+  target = func;
+
+  // all the other things
+  Autolink::init(target);
+  Document::init(target);
+  Escape::init(target);
+  HTML::init(target);
+
+  // version
+  v8u::Version::init(target);
+  exposeHoedownVersion(target);
+} NODE_DEF_MAIN_END(hoedown)
