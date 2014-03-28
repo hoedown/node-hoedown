@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Renders HTML as normal, but also renders the
-// Table of Contents just above the content itself.
+// Reads Markdown from standard input, and renders HTML
+// as normal, but also renders the Table of Contents just
+// above the content itself.
 
 var hoedown = require("hoedown");
 
