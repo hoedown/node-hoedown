@@ -10,7 +10,6 @@
 , "contributors": [ "Xavier Mendez <jmendeth@gmail.com>"
                   ]
 
-, "main": "./build/Release/hoedown"
 , "engines": { "node": ">= 0.10" }
 , "directories": { "src": "src"
                  , "doc": "doc"
