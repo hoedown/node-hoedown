@@ -18,94 +18,42 @@ renderer("¿ÚTF? Nö **prøblem**.") //-> "<p>¿ÚTF? Nö <strong>prøblem</str
 // be sure to reuse the function for blazing speed!
 ```
 
-See some [examples](example/) and [full docs](doc/). (TODO: move following to docs)
-
 
 ## It's flexible
 
-If parsing pure Markdown and generating HTML isn't enough,
-you can pass an options object in your call to `hoedown()`.
-The object follows this structure (values are defaults):
+Because parsing pure Markdown is really boring, you can pass an options object to
+`hoedown()` to customize it. How about making it recognize some extensions?
 
 ```js
-hoedown({
-  // parse (unofficial) Markdown extensions
-  extensions: 0,
-  // maximum nesting level to be parsed
-  maxNesting: 16,
+var renderer = hoedown({
+  extensions: hoedown.Extension.AUTOLINK | hoedown.Extension.FOOTNOTES
+});
 
-  // settings for the renderer
-  renderer: {
-    // which renderer to use
-    type: hoedown.HTML,
-    // renderer-specific options (see below)
-  },
-
-  // grow output buffer each X bytes
-  unit: 64,
-  // grow output buffer to this initial size
-  initialSize: 0,
-})
+renderer("Here's a http://link.com.") //-> "<p>Here's a <a href="http://link.com">http://link.com</a>.</p>"
 ```
 
-Where `extensions` is a combination of the following flags:
-
-TODO
-
-### HTML renderer
-
-Renders pure (X)HTML. Usage:
-
-```js
-hoedown({
-  renderer: {
-    type: hoedown.HTML,
-    // rendering flags 
-    flags: 0
-    // non-zero value enables TOC links
-    // up to the specified header level
-    tocLevel: 0,
-    // whether or not to apply SmartyPants after rendering
-    smartypants: false,
-  }
-})
-```
-
-Where `flags` is a combination of the following flags:
-
-TODO
-
-### HTML ToC renderer
-
-Don't render the document, but a Table of Contents with links pointing
-to the document's headers. Usage:
-
-```js
-hoedown({
-  renderer: {
-    type: hoedown.HTMLTOC,
-    // non-zero value enables TOC links
-    // up to the specified header level
-    tocLevel: 0,
-    // whether or not to apply SmartyPants after rendering
-    smartypants: false,
-  }
-})
-```
+You can see the full list of extensions in [the docs](doc/document.markdown#extension).
 
 ### Other things
 
+It's also possible to customize the HTML renderer by passing some [flags](doc/html.markdown#flags):
+
 ```js
-> if (hoedown.version.major > 1) {
-... console.log("Hoedown is at version %s.", hoedown.version);
-... }
-Hoedown is at version 3.0.0.
+var renderer = hoedown({
+  extensions: hoedown.Extension.AUTOLINK | hoedown.Extension.FOOTNOTES,
+	renderer: {
+	  flags: hoedown.HTML.HARD_WRAP | hoedown.HTML.ESCAPE
+	}
+});
 
-> hoedown.smartypants("Some strange ---said him--- HTML to 'parse'...")
-"&ldquo;Some strange &mdash;said him&mdash; HTML to &lsquo;parse&rsquo;&hellip;&rdquo;"
-
-> TODO
+renderer("Roses are red.\nViolets are blue.") //-> "<p>Roses are red.<br>Violets are blue.</p>"
 ```
+
+The full options accepted by the HTML renderer can be found at [the docs](doc).
+You can also choose another renderer, access Hoedown's version, use the autolinker,
+escape things, and use SmartyPants for smart punctuation.
+
+Check out the [examples](example)!
 
 
 ## It's secure
