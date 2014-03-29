@@ -1,7 +1,7 @@
 #ifndef NODE_HOEDOWN_ESCAPE_HPP
 #define NODE_HOEDOWN_ESCAPE_HPP
 
-#include "v8u/v8u.hpp"
+#include "common.hpp"
 
 #include "hoedown/escape.h"
 

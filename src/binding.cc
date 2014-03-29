@@ -1,6 +1,4 @@
-#include "v8u/v8u.hpp"
-using namespace v8;
-
+#include "common.hpp"
 #include "autolink.hpp"
 #include "document.hpp"
 #include "escape.hpp"
