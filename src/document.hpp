@@ -24,8 +24,12 @@ namespace Document {
   V8_SCB(HoedownCall) {
     //TODO
   }
+  
+  //TODO: destructor
 
   NODE_DEF(init) {
+    V8_HANDLE_SCOPE(scope);
+    
     // flags: Extension
     Local<Object> exts = v8u::Obj();
     exts->Set(v8u::Symbol("TABLES"), v8u::Int(HOEDOWN_EXT_TABLES));
@@ -41,7 +45,35 @@ namespace Document {
     exts->Set(v8u::Symbol("NO_INTRA_EMPHASIS"), v8u::Int(HOEDOWN_EXT_NO_INTRA_EMPHASIS));
     exts->Set(v8u::Symbol("SPACE_HEADERS"), v8u::Int(HOEDOWN_EXT_SPACE_HEADERS));
     exts->Set(v8u::Symbol("DISABLE_INDENTED_CODE"), v8u::Int(HOEDOWN_EXT_DISABLE_INDENTED_CODE));
-    target->Set(v8u::Symbol("Extension"), exts);
+    target->Set(v8u::Symbol("Extensions"), exts);
+
+    // extension categories
+    target->Set(v8u::Symbol("EXT_BLOCK"), v8u::Int(HOEDOWN_EXT_BLOCK));
+    target->Set(v8u::Symbol("EXT_SPAN"), v8u::Int(HOEDOWN_EXT_SPAN));
+    target->Set(v8u::Symbol("EXT_FLAGS"), v8u::Int(HOEDOWN_EXT_FLAGS));
+    target->Set(v8u::Symbol("EXT_NEGATIVE"), v8u::Int(HOEDOWN_EXT_NEGATIVE));
+
+    // flags: ListFlags
+    Local<Object> listflags = v8u::Obj();
+    listflags->Set(v8u::Symbol("LIST_ORDERED"), v8u::Int(HOEDOWN_LIST_ORDERED));
+    listflags->Set(v8u::Symbol("LI_BLOCK"), v8u::Int(HOEDOWN_LI_BLOCK));
+    target->Set(v8u::Symbol("ListFlags"), listflags);
+
+    // flags: TableFlags
+    Local<Object> tableflags = v8u::Obj();
+    tableflags->Set(v8u::Symbol("ALIGN_LEFT"), v8u::Int(HOEDOWN_TABLE_ALIGN_LEFT));
+    tableflags->Set(v8u::Symbol("ALIGN_RIGHT"), v8u::Int(HOEDOWN_TABLE_ALIGN_RIGHT));
+    tableflags->Set(v8u::Symbol("ALIGN_CENTER"), v8u::Int(HOEDOWN_TABLE_ALIGN_CENTER));
+    tableflags->Set(v8u::Symbol("ALIGNMASK"), v8u::Int(HOEDOWN_TABLE_ALIGNMASK));
+    tableflags->Set(v8u::Symbol("HEADER"), v8u::Int(HOEDOWN_TABLE_HEADER));
+    target->Set(v8u::Symbol("TableFlags"), tableflags);
+    
+    // enum: AutolinkType
+    Local<Object> autolink = v8u::Obj();
+    autolink->Set(v8u::Symbol("NONE"), v8u::Int(HOEDOWN_AUTOLINK_NONE));
+    autolink->Set(v8u::Symbol("NORMAL"), v8u::Int(HOEDOWN_AUTOLINK_NORMAL));
+    autolink->Set(v8u::Symbol("EMAIL"), v8u::Int(HOEDOWN_AUTOLINK_EMAIL));
+    target->Set(v8u::Symbol("AutolinkType"), autolink);
   }
 }
 

@@ -10,6 +10,8 @@ namespace Escape {
   // TODO
 
   NODE_DEF(init) {
+    V8_HANDLE_SCOPE(scope);
+    
     //TODO
   }
 }
