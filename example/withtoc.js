@@ -5,11 +5,10 @@
 
 var hoedown = require("hoedown");
 
-// Here we pick all block and span extensions,
-// instead of specifying them one by one.
+// Here we pick all block and span extensions, instead of specifying them one by one.
 // Hint: you don't do this at production.
 var exts = hoedown.EXT_BLOCK | hoedown.EXT_SPAN | hoedown.EXT_SPACE_HEADERS;
-// Maximum ToC level
+// Maximum header level to be included in the TOC
 var toc = 4;
 
 // create renderer for the Table of Contents
@@ -18,7 +17,7 @@ var rendertoc = hoedown({
   maxNesting: 10,
 
   renderer: {
-    type: hoedown.HTMLTOC,
+    type: hoedown.HTML.TOC,
     tocLevel: toc,
     smartypants: true
   }
@@ -30,14 +29,14 @@ var render = hoedown({
 
   renderer: {
     type: hoedown.HTML,
-    flags: hoedown.HTML.HARD_WRAP,
+    flags: hoedown.HTML.Flags.HARD_WRAP,
     tocLevel: toc,
     smartypants: true
   }
 });
 
 collectInput(process.stdin, function(input) {
-  // render both ToC and content
+  // render both TOC and content
   var tochtml = rendertoc(input);
   var html = render(input);
 
