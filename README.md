@@ -26,34 +26,35 @@ Because parsing pure Markdown is really boring, you can pass an options object t
 
 ```js
 var renderer = hoedown({
-  extensions: hoedown.Extension.AUTOLINK | hoedown.Extension.FOOTNOTES
+  extensions: hoedown.Extensions.AUTOLINK | hoedown.Extensions.FOOTNOTES
 });
 
 renderer("Here's a http://link.com.") //-> "<p>Here's a <a href="http://link.com">http://link.com</a>.</p>"
 ```
 
-You can see the full list of extensions in [the docs](doc/document.markdown#extension).
-
-### Other things
-
+You can see the full list of extensions in [the docs](doc/document.markdown#extension).  
 It's also possible to customize the HTML renderer by passing some [flags](doc/html.markdown#flags):
 
 ```js
 var renderer = hoedown({
-  extensions: hoedown.Extension.AUTOLINK | hoedown.Extension.FOOTNOTES,
-	renderer: {
-	  flags: hoedown.HTML.HARD_WRAP | hoedown.HTML.ESCAPE
-	}
+  extensions: hoedown.Extensions.AUTOLINK | hoedown.Extensions.FOOTNOTES,
+  renderer: {
+    flags: hoedown.HTML.Flags.HARD_WRAP | hoedown.HTML.Flags.ESCAPE
+  }
 });
 
 renderer("Roses are red.\nViolets are blue.") //-> "<p>Roses are red.<br>Violets are blue.</p>"
 ```
 
 The full options accepted by the HTML renderer can be found at [the docs](doc).
-You can also choose another renderer, access Hoedown's version, use the autolinker,
-escape things, and use SmartyPants for smart punctuation.
+You can also use the TOC renderer, as in [this example](examples/withtoc.js).
 
-Check out the [examples](example)!
+### Other things
+
+You also can access Hoedown's version, use the autolinker, escape things, or manually
+call SmartyPants for smart punctuation in your HTML.
+
+Check out the [docs](doc) and the [examples](example)!
 
 
 ## It's secure
@@ -70,8 +71,8 @@ of including custom callbacks in renderers, or create pure JS renderers. There a
 many reasons for that:
 
  * **Painfully slow:** the constant switches between C++ and JS decrease performance.
- * **Invalid:** the callbacks had to be synchronous, which totally stopped you from
-   working with asynchronous libraries, which are common.
+ * **Often useless:** the callbacks had to be synchronous, which totally stopped you from
+   working with asynchronous libraries.
 
 If you need further processing, it's better to process the rendered output (if it's
 HTML, you can use jsdom for instance). FIXME: mention JSON
