@@ -6,13 +6,14 @@
 #include "hoedown/escape.h"
 
 namespace Escape {
-
-  // TODO
+  // TODO escapeHTML
+  NODE_HOEDOWN_SIMPLE_HANDLER(EscapeHref, "escapeHref", hoedown_escape_href)
 
   NODE_DEF(init) {
     V8_HANDLE_SCOPE(scope);
     
-    //TODO
+    //EscapeHTML::init(target);
+    EscapeHref::init(target);
   }
 }
 

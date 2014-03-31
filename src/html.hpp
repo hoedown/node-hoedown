@@ -9,7 +9,7 @@ namespace HTML {
   Persistent<Object> html;
   Persistent<Object> htmltoc;
 
-  NODE_HOEDOWN_SIMPLE_HANDLER(Smartypants, hoedown_html_smartypants)
+  NODE_HOEDOWN_SIMPLE_HANDLER(Smartypants, "smartypants", hoedown_html_smartypants)
   
   V8_SCB(IsTag) {
     String::Utf8Value html (info[0]);
@@ -51,7 +51,7 @@ namespace HTML {
     target->Set(v8u::Symbol("TOC"), htmltoc);
 
     // other methods
-    v8u::SetMethod(target, &Smartypants, "smartypants");
+    Smartypants::init(target);
     v8u::SetMethod(target, &IsTag, "isTag");
   }
 }
