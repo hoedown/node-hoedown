@@ -17,7 +17,8 @@ void exposeHoedownVersion(Handle<Object> target) {
 
 NODE_DEF_MAIN() {
   // create module function
-  target = v8u::SetMethod(target, &Document::Hoedown, "hoedown");
+  Document::Hoedown::init(target);
+  target = Document::Hoedown::templ_->GetFunction();
 
   // all the other things
   Autolink::init(target);

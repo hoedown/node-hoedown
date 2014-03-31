@@ -7,7 +7,7 @@
 
 namespace HTML {
   Persistent<Object> html;
-  Persistent<Object> htmltoc;
+  Persistent<Object> html_toc;
 
   NODE_HOEDOWN_SIMPLE_HANDLER(Smartypants, "smartypants", hoedown_html_smartypants)
   
@@ -47,8 +47,8 @@ namespace HTML {
     target->Set(v8u::Symbol("TagType"), tag);
 
     // HTML TOC renderer
-    htmltoc = v8u::Persist(v8u::Obj());
-    target->Set(v8u::Symbol("TOC"), htmltoc);
+    html_toc = v8u::Persist(v8u::Obj());
+    target->Set(v8u::Symbol("TOC"), html_toc);
 
     // other methods
     Smartypants::init(target);

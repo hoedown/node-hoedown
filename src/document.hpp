@@ -7,25 +7,108 @@
 #include "hoedown/document.h"
 
 namespace Document {
-  struct HoedownData {
+  enum RendererType {
+    RENDERER_HTML,
+    RENDERER_HTML_TOC,
+  };
+  
+  class Hoedown : public node::ObjectWrap {
+  public:
+    static V8_SCB(Do) {
+      Hoedown* obj = (Hoedown*) info.This()->GetPointerFromInternalField(0);
+      hoedown_buffer* ob = obj->ob;
+      String::Utf8Value input (info[0]);
+
+      hoedown_buffer_reset(ob);
+      hoedown_document_render(obj->doc, ob, (uint8_t*)*input, input.length());
+      if (obj->sp) {
+        hoedown_buffer_reset(obj->sp);
+        hoedown_html_smartypants(obj->sp, ob->data, ob->size);
+        ob = obj->sp;
+      }
+      return String::New((char*)ob->data, ob->size);
+    }
+
+    V8_CTOR() {
+      size_t unit = NODE_HOEDOWN_DEF_UNIT;
+      size_t size = NODE_HOEDOWN_DEF_SIZE;
+      int extensions = 0;
+      size_t maxNesting = NODE_HOEDOWN_DEF_MAX_NESTING;
+      RendererType type = RENDERER_HTML;
+      int flags = 0;
+      bool smartypants = false;
+      int tocLevel = 0;
+      
+      if (info[0]->IsObject()) {
+        Local<Object> opts = v8u::Obj(info[0]);
+        int value;
+
+        NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
+        NODE_HOEDOWN_UNPACK_INT(opts, "initialSize", size);
+
+        extensions = v8u::Int(opts->Get(v8u::Symbol("extensions")));
+        NODE_HOEDOWN_UNPACK_INT(opts, "maxNesting", maxNesting);
+
+        Local<Value> rval = opts->Get(v8u::Symbol("renderer"));
+        if (rval->IsObject()) {
+          Local<Object> rndr = v8u::Obj(rval);
+          if (rndr->Has(v8u::Symbol("type"))) {
+            Local<Value> jstype = rndr->Get(v8u::Symbol("type"));
+            if (jstype == HTML::html) type = RENDERER_HTML;
+            else if (jstype == HTML::html_toc) type = RENDERER_HTML_TOC;
+            else V8_THROW(v8u::TypeErr("Unknown renderer type found."));
+          }
+          flags = v8u::Int(opts->Get(v8u::Symbol("flags")));
+          smartypants = v8u::Bool(opts->Get(v8u::Symbol("smartypants")));
+          tocLevel = v8u::Int(opts->Get(v8u::Symbol("tocLevel")));
+        }
+      }
+      
+      V8_WRAP(new Hoedown(unit, size, extensions, maxNesting, type, flags, smartypants, tocLevel));
+    } V8_CTOR_END()
+
+    NODE_TYPE(Hoedown, "hoedown") {
+      V8_DEF_CB("do", Do);
+    } NODE_TYPE_END()
+
     hoedown_buffer* ob;
-    hoedown_buffer* ob2;
+    hoedown_buffer* sp;
     hoedown_document* doc;
     hoedown_renderer* rndr;
     void (*rndr_free)(hoedown_renderer* rndr);
-  };
 
-  V8_SCB(Hoedown) {
-    if (info[0]->IsObject()) {
-      Local<Object> opts = v8u::Obj(info[0]);
+    Hoedown(size_t unit, size_t size,
+            int extensions, size_t maxNesting,
+            RendererType type,
+            int flags, bool smartypants, int tocLevel) {
+      if (smartypants && (type == RENDERER_HTML || type == RENDERER_HTML_TOC)) {
+        sp = hoedown_buffer_new(unit);
+        hoedown_buffer_grow(sp, size);
+      } else sp = NULL;
+      
+      switch (type) {
+        case RENDERER_HTML:
+          rndr = hoedown_html_renderer_new(flags, tocLevel);
+          rndr_free = &hoedown_html_renderer_free;
+          break;
+        case RENDERER_HTML_TOC:
+          rndr = hoedown_html_toc_renderer_new(tocLevel);
+          rndr_free = &hoedown_html_renderer_free;
+          break;
+      };
+      
+      doc = hoedown_document_new(rndr, extensions, maxNesting);
+      
+      ob = hoedown_buffer_new(unit);
+      hoedown_buffer_grow(ob, size);
     }
-  }
-
-  V8_SCB(HoedownCall) {
-    //TODO
-  }
-  
-  //TODO: destructor
+    ~Hoedown() {
+      hoedown_buffer_free(ob);
+      hoedown_document_free(doc);
+      rndr_free(rndr);
+      if (sp) hoedown_buffer_free(sp);
+    }
+  }; V8_POST_TYPE(Hoedown);
 
   NODE_DEF(init) {
     V8_HANDLE_SCOPE(scope);

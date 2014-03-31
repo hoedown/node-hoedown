@@ -5,7 +5,8 @@
 using namespace v8;
 
 #define NODE_HOEDOWN_DEF_UNIT 64
-#define NODE_HOEDOWN_DEF_SIZE  0
+#define NODE_HOEDOWN_DEF_SIZE 0
+#define NODE_HOEDOWN_DEF_MAX_NESTING 16
 
 #define NODE_HOEDOWN_UNPACK_INT(OBJ, NAME, VAR)                                \
   value = v8u::Int(OBJ->Get(v8u::Symbol(NAME)));                               \
