@@ -13,9 +13,9 @@ the successor for the abandoned [Sundown][].
 ```js
 var renderer = hoedown();
 
-renderer("Some *useful* Markdown.") //-> "<p>Some <em>useful</em> Markdown.</p>"
-renderer("¿ÚTF? Nö **prøblem**.") //-> "<p>¿ÚTF? Nö <strong>prøblem</strong>.</p>"
-// be sure to reuse the function for blazing speed!
+renderer.do("Some *useful* Markdown.") //-> "<p>Some <em>useful</em> Markdown.</p>"
+renderer.do("¿ÚTF? Nö **prøblem**.") //-> "<p>¿ÚTF? Nö <strong>prøblem</strong>.</p>"
+// be sure to reuse the object for blazing speed!
 ```
 
 
@@ -29,7 +29,7 @@ var renderer = hoedown({
   extensions: hoedown.Extensions.AUTOLINK | hoedown.Extensions.FOOTNOTES
 });
 
-renderer("Here's a http://link.com.") //-> "<p>Here's a <a href="http://link.com">http://link.com</a>.</p>"
+renderer.do("Here's a http://link.com.") //-> "<p>Here's a <a href="http://link.com">http://link.com</a>.</p>"
 ```
 
 You can see the full list of extensions in [the docs](doc/document.markdown#extension).  
@@ -43,18 +43,18 @@ var renderer = hoedown({
   }
 });
 
-renderer("Roses are red.\nViolets are blue.") //-> "<p>Roses are red.<br>Violets are blue.</p>"
+renderer.do("Roses are red.\nViolets are blue.") //-> "<p>Roses are red.<br>Violets are blue.</p>"
 ```
 
 The full options accepted by the HTML renderer can be found at [the docs](doc).
-You can also use the TOC renderer, as in [this example](examples/withtoc.js).
+You can also use the TOC renderer to render a Table of Contents of the document,
+as in [this example](example/withtoc.js).
 
-### Other things
+#### Other things
 
 You also can access Hoedown's version, use the autolinker, escape things, or manually
-call SmartyPants for smart punctuation in your HTML.
-
-Check out the [docs](doc) and the [examples](example)!
+call SmartyPants for smart punctuation in your HTML. Check out the [docs](doc)
+and the [examples](example)!
 
 
 ## It's secure

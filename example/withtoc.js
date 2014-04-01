@@ -3,11 +3,11 @@
 // as normal, but also renders the Table of Contents just
 // above the content itself.
 
-var hoedown = require("hoedown");
+var hoedown = require("..");
 
 // Here we pick all block and span extensions, instead of specifying them one by one.
 // Hint: you don't do this at production.
-var exts = hoedown.EXT_BLOCK | hoedown.EXT_SPAN | hoedown.EXT_SPACE_HEADERS;
+var exts = hoedown.EXT_BLOCK | hoedown.EXT_SPAN | hoedown.Extensions.SPACE_HEADERS;
 // Maximum header level to be included in the TOC
 var toc = 4;
 
@@ -37,8 +37,8 @@ var render = hoedown({
 
 collectInput(process.stdin, function(input) {
   // render both TOC and content
-  var tochtml = rendertoc(input);
-  var html = render(input);
+  var tochtml = rendertoc.do(input);
+  var html = render.do(input);
 
   // output them
   process.stdout.write(tochtml + "\n\n" + html);
@@ -46,15 +46,9 @@ collectInput(process.stdin, function(input) {
 
 
 
-// logic to collect all the input
-
-function collectInput(stream, callback) {
-  req.setEncoding("utf8");
+function collectInput(stream, cb) {
+  stream.setEncoding("utf8");
   var data = "";
-  stream.on("data", function(chunk) {
-    data += chunk;
-  });
-  stream.on("end", function() {
-    callback(data);
-  });
+  stream.on("data", function(chunk) { data += chunk; });
+  stream.on("end", function() { cb(data); });
 }
