@@ -19,7 +19,7 @@ namespace Document {
       hoedown_buffer* ob = obj->ob;
       String::Utf8Value input (info[0]);
 
-      hoedown_buffer_reset(ob);
+      ob->size = 0; // equivalent of hoedown_buffer_reset(ob);
       hoedown_document_render(obj->doc, ob, (uint8_t*)*input, input.length());
       if (obj->sp) {
         hoedown_buffer_reset(obj->sp);
@@ -38,7 +38,7 @@ namespace Document {
       int flags = 0;
       bool smartypants = false;
       int tocLevel = 0;
-      
+
       if (info[0]->IsObject()) {
         Local<Object> opts = v8u::Obj(info[0]);
         int value;
@@ -58,12 +58,12 @@ namespace Document {
             else if (jstype == HTML::html_toc) type = RENDERER_HTML_TOC;
             else V8_THROW(v8u::TypeErr("Unknown renderer type found."));
           }
-          flags = v8u::Int(opts->Get(v8u::Symbol("flags")));
-          smartypants = v8u::Bool(opts->Get(v8u::Symbol("smartypants")));
-          tocLevel = v8u::Int(opts->Get(v8u::Symbol("tocLevel")));
+          flags = v8u::Int(rndr->Get(v8u::Symbol("flags")));
+          smartypants = v8u::Bool(rndr->Get(v8u::Symbol("smartypants")));
+          tocLevel = v8u::Int(rndr->Get(v8u::Symbol("tocLevel")));
         }
       }
-      
+
       V8_WRAP(new Hoedown(unit, size, extensions, maxNesting, type, flags, smartypants, tocLevel));
     } V8_CTOR_END()
 
