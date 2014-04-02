@@ -86,3 +86,4 @@ it'll automatically highlight your fenced code blocks.
 [Hoedown bugs]: https://github.com/hoedown/hoedown#help-us
 [Sundown]: https://github.com/vmg/sundown
 [Prism]: http://prismjs.com
+[SmartyPants]: http://daringfireball.net/projects/smartypants
