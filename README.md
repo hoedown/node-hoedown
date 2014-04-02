@@ -32,8 +32,8 @@ var renderer = hoedown({
 renderer.do("Here's a http://link.com.") //-> "<p>Here's a <a href="http://link.com">http://link.com</a>.</p>"
 ```
 
-You can see the full list of extensions in [the docs](doc/document.markdown#extension).  
-It's also possible to customize the HTML renderer by passing some [flags](doc/html.markdown#flags):
+You can see the full list of extensions in [the docs](doc/document.markdown#flags_hoedown_extensions).  
+It's also possible to customize the HTML renderer by passing some [flags](doc/html.markdown#flags_hoedown_html_flags):
 
 ```js
 var renderer = hoedown({
@@ -52,9 +52,9 @@ as in [this example](example/withtoc.js).
 
 #### Other things
 
-You also can access Hoedown's version, use the autolinker, escape things, or manually
-call SmartyPants for smart punctuation in your HTML. Check out the [docs](doc)
-and the [examples](example)!
+Hoedown comes with a fully functional implementation of [SmartyPants][].
+You can also access Hoedown's version, use the autolinker, escape things, etc.
+Check out the [docs](doc) and the [examples](example)!
 
 
 ## It's secure

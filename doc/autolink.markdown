@@ -1,0 +1,3 @@
+# Autolinking
+
+In progress (of understanding the C API, so I can expose it, so I can write something here)...
