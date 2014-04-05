@@ -1,12 +1,10 @@
-# node-hoedown
-<sup>**Warning:** the API may change a bit until we release v1!</sup>
+# node-hoedown <sup>(beta)</sup>
 
 ```js
 var hoedown = require("hoedown");
 ```
 
-Lightweight, fast Node.JS bindings of the [Hoedown][] library,
-the successor for the abandoned [Sundown][].
+Lightweight, fast Node.JS bindings for [Hoedown][], the amazing Markdown library (successor for the abandoned [Sundown][]).
 
 *Really* simple to use:
 
@@ -68,7 +66,7 @@ crash under any input. If you believe you have found a vulnerability,
 
 Users coming from Robotskirt may notice these bindings don't offer the possibility
 of including custom callbacks in renderers, or create pure JS renderers. There are
-many reasons for that:
+many reasons for that, notably:
 
  * **Painfully slow:** the constant switches between C++ and JS decrease performance.
  * **Often useless:** the callbacks had to be synchronous, which totally stopped you from
