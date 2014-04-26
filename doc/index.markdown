@@ -1,6 +1,8 @@
 # Hoedown
 
+```js
     var hoedown = require("hoedown");
+```
 
 Hoedown is a Markdown processing library that aims to be fast and efficient,
 while customizable at the same time. This module exports the whole Hoedown

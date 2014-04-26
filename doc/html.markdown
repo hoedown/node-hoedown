@@ -10,7 +10,8 @@ Exports Hoedown's HTML renderer and other HTML-related utilities.
 The default HTML renderer.  
 It accepts the following options in the `renderer` object:
 
-  * `flags` is an integer bitmask formed by a combinations of the flags in [hoedown.HTML.Flags](#flags_hoedown_html_flags) to alter renderer behaviour.
+  * `flags` is an integer bitmask formed by a combinations of the flags in [hoedown.HTML.Flags](#flags_hoedown_html_flags) to alter renderer behaviour.  
+    Default: 0 (no flags).
 
   * `smartypants` is a boolean. If true, the resulting HTML will internally be passed to SmartyPants (see [below](#handler_hoedown_html_smartypants)) for smart punctuation.  
     Default: `false`.
