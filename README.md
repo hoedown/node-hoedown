@@ -58,8 +58,11 @@ Check out the [docs](doc) and the [examples](example)!
 ## It's secure
 
 Hoedown is all about security. It has been extensively tested to make sure it won't
-crash under any input. If you believe you have found a vulnerability,
+crash or leak under any input. If you believe you have found a vulnerability,
 [report it there][Hoedown bugs].
+
+That said, the HTML produced by Hoedown is *not* secure. Unless you're using the
+`ESCAPE` or `SKIP_HTML` flags, you should really consider sanitizing the HTML.
 
 
 ## No custom renderers?
