@@ -46,7 +46,7 @@ namespace Document {
         NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
         NODE_HOEDOWN_UNPACK_INT(opts, "initialSize", size);
 
-        extensions = v8u::Int(opts->Get(v8u::Symbol("extensions")));
+        extensions = parseFlags(opts->Get(v8u::Symbol("extensions")));
         NODE_HOEDOWN_UNPACK_INT(opts, "maxNesting", maxNesting);
 
         Local<Value> rval = opts->Get(v8u::Symbol("renderer"));
@@ -58,7 +58,7 @@ namespace Document {
             else if (jstype == HTML::html_toc) type = RENDERER_HTML_TOC;
             else V8_THROW(v8u::TypeErr("Unknown renderer type found."));
           }
-          flags = v8u::Int(rndr->Get(v8u::Symbol("flags")));
+          flags = parseFlags(rndr->Get(v8u::Symbol("flags")));
           smartypants = v8u::Bool(rndr->Get(v8u::Symbol("smartypants")));
           tocLevel = v8u::Int(rndr->Get(v8u::Symbol("tocLevel")));
         }

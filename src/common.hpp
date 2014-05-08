@@ -50,6 +50,19 @@ using namespace v8;
       hoedown_buffer_free(ob);                                                 \
     }                                                                          \
   }; V8_POST_TYPE(CPP_NAME)
-    
+
+// Flexible flag parsing
+inline unsigned int parseFlags(Handle<Value> value) {
+  if (value->IsArray()) {
+    Handle<Array> arr = v8u::Arr(value);
+    int length = arr->Length();
+    unsigned int flags = 0;
+
+    for (int i=0; i<length; i++)
+      flags |= v8u::Int(arr->Get(i));
+    return flags;
+  }
+  return v8u::Int(value);
+}
 
 #endif /* NODE_HOEDOWN_COMMON_HPP */
