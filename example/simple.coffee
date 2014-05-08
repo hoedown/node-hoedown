@@ -1,33 +1,50 @@
 #!/usr/bin/env coffee
-# A simple example of use with CoffeeScript.
+# Simple usage example for CoffeeScript.
 
-hoedown = require 'hoedown'
+hoedown = require "hoedown"
+{ Extensions, HTML } = hoedown
 
 
-renderer = hoedown(
-  extensions: hoedown.Extensions.TABLES |
-              hoedown.Extensions.FOOTNOTES |
-              hoedown.EXT_SPAN
+# Initialize a renderer
+myRenderer = hoedown {
+  extensions: [ Extensions.TABLES
+                Extensions.FENCED_CODE
+                Extensions.AUTOLINK
+                Extensions.NO_INTRA_EMPHASIS ]
 
   renderer:
-    flags: hoedown.HTML.Flags.HARD_WRAP
+    type: HTML
+    flags: [ HTML.Flags.HARD_WRAP
+             HTML.Flags.SKIP_HTML ]
     smartypants: yes
-)
+}
 
-html = renderer.do '''
 
-  This is some ---presumably cool--- Markdown.
-  It's being rendered by [Hoedown][], the ==amazing== Markdown parser[^1].
+# Render stuff! Yay!
+html = myRenderer.do '''
 
-  | First name | Last name | Age | Total  |
-  |------------|-----------|-----|--------|
-  | Peter      | Parker    | 28  |  $9.99 |
-  | John       | Hood      | 33  | €21.64 |
-  | Clark      | Kent      | 18  | $15.89 |
+  CoffeeScript is beautiful.
+  But Markdown *inside* CoffeeScript is just sublime.
 
-  [Hoedown]: https://github.com/hoedown/hoedown "Project page"
-  [^1]: It's actually based on https://github.com/vmg/sundown.
+  Look at how simple it is to render custom Markdown ---with smart punctuation!---
+  using Hoedown. You can reuse it multiple times and it's pretty fast...
+
+
+  ## The killer part
+
+  A CoffeeScript code block, inside a Markdown string, inside CoffeeScript.
+  Don't argue me on how meta this is.
+
+  ~~~ coffeescript
+  # Greatest Common Divisor
+  gcd = (a, b) ->
+    if a is 0 then return b
+    gcd b, a%b
+
+  gcd 60, 24  #-> 12
+  ~~~
 
 '''
 
+# Log the rendered HTML
 console.log html
