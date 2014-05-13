@@ -56,7 +56,6 @@ using namespace v8;
     CPP_NAME(size_t unit, size_t minSiz, size_t maxSiz):                       \
         minSize(minSiz), maxSize(maxSiz) {                                     \
       if (unit < 1) unit = 1;                                                  \
-      if (minSize < 0) minSize = 0;                                            \
       if (maxSize < minSize) maxSize = minSize;                                \
                                                                                \
       ob = hoedown_buffer_new(unit);                                           \

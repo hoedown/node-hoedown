@@ -13,14 +13,22 @@ namespace Escape {
       hoedown_buffer* ob = obj->ob;
       String::Utf8Value input (info[0]);
 
-      hoedown_buffer_reset(ob);
+      if (ob->asize > obj->maxSize) {
+        free(ob->data);
+        ob->data = (uint8_t*) malloc(obj->minSize);
+        if (!ob->data) V8_STHROW(v8u::Err("No memory."));
+        ob->asize = obj->minSize;
+      }
+      ob->size = 0;
+
       hoedown_escape_html(ob, (uint8_t*)*input, input.length(), obj->secure);
       return String::New((char*)ob->data, ob->size);
     }
 
     V8_CTOR() {
       size_t unit = NODE_HOEDOWN_DEF_UNIT;
-      size_t size = NODE_HOEDOWN_DEF_SIZE;
+      size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;
+      size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;
       bool secure = false;
 
       if (info[0]->IsObject()) {
@@ -28,12 +36,13 @@ namespace Escape {
         int value;
 
         NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
-        NODE_HOEDOWN_UNPACK_INT(opts, "initialSize", size);
+        NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);
+        NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);
 
         secure = v8u::Bool(opts->Get(v8u::Symbol("secure")));
       }
 
-      V8_WRAP(new EscapeHTML(unit, size, secure));
+      V8_WRAP(new EscapeHTML(unit, minSize, maxSize, secure));
     } V8_CTOR_END()
 
     NODE_TYPE(EscapeHTML, "escapeHTML") {
@@ -42,11 +51,16 @@ namespace Escape {
 
     hoedown_buffer* ob;
     bool secure;
+    size_t minSize, maxSize;
 
-    EscapeHTML(size_t unit, size_t size,
-            bool secure): secure(secure) {
+    EscapeHTML(size_t unit, size_t minSiz, size_t maxSiz, bool secure):
+        secure(secure), minSize(minSiz), maxSize(maxSiz) {
+      if (unit < 1) unit = 1;
+      if (maxSize < minSize) maxSize = minSize;
+
       ob = hoedown_buffer_new(unit);
-      hoedown_buffer_grow(ob, size);
+      if (!ob || hoedown_buffer_grow(ob, minSize) != HOEDOWN_BUF_OK)
+        V8_THROW(v8u::Err("No memory."));
     }
     ~EscapeHTML() {
       hoedown_buffer_free(ob);

@@ -19,19 +19,35 @@ namespace Document {
       hoedown_buffer* ob = obj->ob;
       String::Utf8Value input (info[0]);
 
-      ob->size = 0; // equivalent of hoedown_buffer_reset(ob);
+      if (ob->asize > obj->maxSize) {
+        free(ob->data);
+        ob->data = (uint8_t*) malloc(obj->minSize);
+        if (!ob->data) V8_STHROW(v8u::Err("No memory."));
+        ob->asize = obj->minSize;
+      }
+      ob->size = 0;
+
       hoedown_document_render(obj->doc, ob, (uint8_t*)*input, input.length());
       if (obj->sp) {
-        hoedown_buffer_reset(obj->sp);
-        hoedown_html_smartypants(obj->sp, ob->data, ob->size);
         ob = obj->sp;
+
+        if (ob->asize > obj->maxSize) {
+          free(ob->data);
+          ob->data = (uint8_t*) malloc(obj->minSize);
+          if (!ob->data) V8_STHROW(v8u::Err("No memory."));
+          ob->asize = obj->minSize;
+        }
+        ob->size = 0;
+
+        hoedown_html_smartypants(ob, obj->ob->data, obj->ob->size);
       }
       return String::New((char*)ob->data, ob->size);
     }
 
     V8_CTOR() {
       size_t unit = NODE_HOEDOWN_DEF_UNIT;
-      size_t size = NODE_HOEDOWN_DEF_SIZE;
+      size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;
+      size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;
       int extensions = 0;
       size_t maxNesting = NODE_HOEDOWN_DEF_MAX_NESTING;
       RendererType type = RENDERER_HTML;
@@ -44,7 +60,8 @@ namespace Document {
         int value;
 
         NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
-        NODE_HOEDOWN_UNPACK_INT(opts, "initialSize", size);
+        NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);
+        NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);
 
         extensions = parseFlags(opts->Get(v8u::Symbol("extensions")));
         NODE_HOEDOWN_UNPACK_INT(opts, "maxNesting", maxNesting);
@@ -64,7 +81,7 @@ namespace Document {
         }
       }
 
-      V8_WRAP(new Hoedown(unit, size, extensions, maxNesting, type, flags, smartypants, tocLevel));
+      V8_WRAP(new Hoedown(unit, minSize, maxSize, extensions, maxNesting, type, flags, smartypants, tocLevel));
     } V8_CTOR_END()
 
     NODE_TYPE(Hoedown, "hoedown") {
@@ -76,16 +93,20 @@ namespace Document {
     hoedown_document* doc;
     hoedown_renderer* rndr;
     void (*rndr_free)(hoedown_renderer* rndr);
+    size_t minSize, maxSize;
 
-    Hoedown(size_t unit, size_t size,
+    Hoedown(size_t unit, size_t minSiz, size_t maxSiz,
             int extensions, size_t maxNesting,
             RendererType type,
-            int flags, bool smartypants, int tocLevel) {
-      if (smartypants && (type == RENDERER_HTML || type == RENDERER_HTML_TOC)) {
-        sp = hoedown_buffer_new(unit);
-        hoedown_buffer_grow(sp, size);
-      } else sp = NULL;
-      
+            int flags, bool smartypants, int tocLevel):
+          minSize(minSiz), maxSize(maxSiz) {
+      if (unit < 1) unit = 1;
+      if (maxSize < minSize) maxSize = minSize;
+
+      ob = hoedown_buffer_new(unit);
+      if (!ob || hoedown_buffer_grow(ob, minSize) != HOEDOWN_BUF_OK)
+        V8_THROW(v8u::Err("No memory."));
+
       switch (type) {
         case RENDERER_HTML:
           rndr = hoedown_html_renderer_new(flags, tocLevel);
@@ -96,17 +117,28 @@ namespace Document {
           rndr_free = &hoedown_html_renderer_free;
           break;
       };
-      
+      if (!rndr)
+        V8_THROW(v8u::Err("No memory."));
+
       doc = hoedown_document_new(rndr, extensions, maxNesting);
-      
-      ob = hoedown_buffer_new(unit);
-      hoedown_buffer_grow(ob, size);
+      if (!doc)
+        V8_THROW(v8u::Err("No memory."));
+
+      if (smartypants && (type == RENDERER_HTML || type == RENDERER_HTML_TOC)) {
+        sp = hoedown_buffer_new(unit);
+        if (!sp || hoedown_buffer_grow(sp, minSize) != HOEDOWN_BUF_OK)
+          V8_THROW(v8u::Err("No memory."));
+      } else sp = NULL;
     }
     ~Hoedown() {
+      if (!ob) return;
       hoedown_buffer_free(ob);
-      hoedown_document_free(doc);
+      if (!rndr) return;
       rndr_free(rndr);
-      if (sp) hoedown_buffer_free(sp);
+      if (!doc) return;
+      hoedown_document_free(doc);
+      if (!sp) return;
+      hoedown_buffer_free(sp);
     }
   }; V8_POST_TYPE(Hoedown);
 
