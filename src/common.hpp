@@ -53,8 +53,12 @@ using namespace v8;
                                                                                \
     hoedown_buffer* ob;                                                        \
     size_t minSize, maxSize;                                                   \
-    CPP_NAME(size_t unit, size_t minSize, size_t maxSize):                     \
-        minSize(minSize), maxSize(maxSize) {                                   \
+    CPP_NAME(size_t unit, size_t minSiz, size_t maxSiz):                       \
+        minSize(minSiz), maxSize(maxSiz) {                                     \
+      if (unit < 1) unit = 1;                                                  \
+      if (minSize < 0) minSize = 0;                                            \
+      if (maxSize < minSize) maxSize = minSize;                                \
+                                                                               \
       ob = hoedown_buffer_new(unit);                                           \
       if (!ob || hoedown_buffer_grow(ob, minSize) != HOEDOWN_BUF_OK)           \
         V8_THROW(v8u::Err("No memory."));                                      \
@@ -74,7 +78,7 @@ inline unsigned int parseFlags(Handle<Value> value) {
     for (int i=0; i<length; i++)
       flags |= v8u::Int(arr->Get(i));
     return flags;
-  }
+  }//TODO: restrict, docs
   return v8u::Int(value);
 }
 
