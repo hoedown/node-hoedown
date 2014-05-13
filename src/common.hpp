@@ -6,6 +6,7 @@ using namespace v8;
 
 #define NODE_HOEDOWN_DEF_UNIT 64
 #define NODE_HOEDOWN_DEF_MIN_SIZE 0
+#define NODE_HOEDOWN_DEF_MAX_SIZE 0
 #define NODE_HOEDOWN_DEF_MAX_NESTING 16
 
 #define NODE_HOEDOWN_UNPACK_INT(OBJ, NAME, VAR)                                \
@@ -28,13 +29,15 @@ using namespace v8;
     V8_CTOR() {                                                                \
       size_t unit = NODE_HOEDOWN_DEF_UNIT;                                     \
       size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;                              \
+      size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;                              \
       if (info[0]->IsObject()) {                                               \
         Local<Object> opts = v8u::Obj(info[0]);                                \
         int value;                                                             \
         NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);                           \
         NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);                 \
+        NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);                 \
       }                                                                        \
-      V8_WRAP(new CPP_NAME(unit, minSize));                                    \
+      V8_WRAP(new CPP_NAME(unit, minSize, maxSize));                           \
     } V8_CTOR_END()                                                            \
                                                                                \
     NODE_TYPE(CPP_NAME, V8_NAME) {                                             \
@@ -42,7 +45,7 @@ using namespace v8;
     } NODE_TYPE_END()                                                          \
                                                                                \
     hoedown_buffer* ob;                                                        \
-    CPP_NAME(size_t unit, size_t minSize) {                                    \
+    CPP_NAME(size_t unit, size_t minSize, size_t maxSize) {                    \
       ob = hoedown_buffer_new(unit);                                           \
       hoedown_buffer_grow(ob, minSize);                                        \
     }                                                                          \
