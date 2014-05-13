@@ -21,7 +21,14 @@ using namespace v8;
       hoedown_buffer* ob = obj->ob;                                            \
       String::Utf8Value input (info[0]);                                       \
                                                                                \
-      hoedown_buffer_reset(ob);                                                \
+      if (ob->asize > obj->maxSize) {                                          \
+        free(ob->data);                                                        \
+        ob->data = (uint8_t*) malloc(obj->minSize);                            \
+        if (!ob->data) V8_STHROW(v8u::Err("No memory."));                      \
+        ob->asize = obj->minSize;                                              \
+      }                                                                        \
+      ob->size = 0;                                                            \
+                                                                               \
       FUNC(ob, (uint8_t*)*input, input.length());                              \
       return String::New((char*)ob->data, ob->size);                           \
     }                                                                          \
@@ -45,9 +52,12 @@ using namespace v8;
     } NODE_TYPE_END()                                                          \
                                                                                \
     hoedown_buffer* ob;                                                        \
-    CPP_NAME(size_t unit, size_t minSize, size_t maxSize) {                    \
+    size_t minSize, maxSize;                                                   \
+    CPP_NAME(size_t unit, size_t minSize, size_t maxSize):                     \
+        minSize(minSize), maxSize(maxSize) {                                   \
       ob = hoedown_buffer_new(unit);                                           \
-      hoedown_buffer_grow(ob, minSize);                                        \
+      if (!ob || hoedown_buffer_grow(ob, minSize) != HOEDOWN_BUF_OK)           \
+        V8_THROW(v8u::Err("No memory."));                                      \
     }                                                                          \
     ~CPP_NAME() {                                                              \
       hoedown_buffer_free(ob);                                                 \
