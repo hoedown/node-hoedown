@@ -37,8 +37,13 @@ renderer.do("some markdown") //-> "<p>some markdown</p>\n"
     Smaller units mean less memory but more frequent allocations.  
     Default: 64.
 
-  * `initialSize` is a low-level integer parameters. It's the number of bytes that should be initially allocated before doing any renders.  
-    Default: 0.
+  * `minimumSize` is a low-level integer parameter. It's the minimum number of bytes the output buffer is always
+    allocated before rendering. It's recommended to set it to a high enough length to contain most outputs.  
+    Default: 0 (don't preallocate).
+
+  * `maximumSize` is a low-level integer parameter. It's the maximum number of bytes the output buffer can use
+    without being reallocated to `minimumSize` the next render. It should be at least `minimumSize`.  
+    Default: `minimumSize` setting.
 
 
 ## Flags: hoedown.Extensions
