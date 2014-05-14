@@ -1,6 +1,6 @@
 # node-hoedown <sup>(beta)</sup>
 
-[![Build Status](https://travis-ci.org/hoedown/node-hoedown.png?branch=master)](https://travis-ci.org/hoedown/node-hoedown)
+[![Build Status](https://travis-ci.org/hoedown/node-hoedown.svg?branch=master)](https://travis-ci.org/hoedown/node-hoedown)
 
 ```js
 var hoedown = require("hoedown");
