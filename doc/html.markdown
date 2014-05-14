@@ -57,15 +57,11 @@ It's best to create the two renderers with the same options, changing only `rend
 Flags which modify the behaviour of the HTML renderer.
 
   * `hoedown.HTML.Flags.SKIP_HTML`: Strip all HTML tags.
-  * `hoedown.HTML.Flags.SKIP_STYLE`: Strip `<style>` tags.
-  * `hoedown.HTML.Flags.SKIP_IMAGES`: Don't render images.
-  * `hoedown.HTML.Flags.SKIP_LINKS`: Don't render links.
+  * `hoedown.HTML.Flags.ESCAPE`: Escape all HTML.
   * `hoedown.HTML.Flags.EXPAND_TABS`: Expand tabs to spaces.
   * `hoedown.HTML.Flags.SAFELINK`: Only allow links to safe protocols.
-  * `hoedown.HTML.Flags.TOC`: Produce links to the Table of Contents.
   * `hoedown.HTML.Flags.HARD_WRAP`: Render each linebreak as `<br>`.
   * `hoedown.HTML.Flags.USE_XHTML`: Render XHTML.
-  * `hoedown.HTML.Flags.ESCAPE`: Escape all HTML.
 
 
 ## Handler: hoedown.HTML.smartypants(options)
