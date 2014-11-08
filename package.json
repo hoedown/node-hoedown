@@ -1,7 +1,7 @@
 { "name": "hoedown"
 , "description": "Node bindings for Hoedown, the amazing Markdown library."
 , "keywords": ["hoedown", "sundown", "upskirt", "markdown", "smartypants"]
-, "version": "0.2.0"
+, "version": "0.3.0"
 , "homepage": "https://github.com/hoedown/node-hoedown"
 
 , "author": "Xavier Mendez <jmendeth@gmail.com>"
