@@ -1,7 +1,7 @@
 #!/usr/bin/env coffee
 # Simple usage example for CoffeeScript.
 
-hoedown = require "hoedown"
+hoedown = require ".."
 { Extensions, HTML } = hoedown
 
 
