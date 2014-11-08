@@ -21,20 +21,22 @@ namespace Document {
 
       if (ob->asize > obj->maxSize) {
         free(ob->data);
-        ob->data = (uint8_t*) malloc(obj->minSize);
-        if (!ob->data) V8_STHROW(v8u::Err("No memory."));
+        ob->data = (uint8_t*) hoedown_malloc(obj->minSize);
         ob->asize = obj->minSize;
       }
       ob->size = 0;
 
-      hoedown_document_render(obj->doc, ob, (uint8_t*)*input, input.length());
+      if (obj->inline_)
+        hoedown_document_render_inline(obj->doc, ob, (uint8_t*)*input, input.length());
+      else
+        hoedown_document_render(obj->doc, ob, (uint8_t*)*input, input.length());
+
       if (obj->sp) {
         ob = obj->sp;
 
         if (ob->asize > obj->maxSize) {
           free(ob->data);
           ob->data = (uint8_t*) malloc(obj->minSize);
-          if (!ob->data) V8_STHROW(v8u::Err("No memory."));
           ob->asize = obj->minSize;
         }
         ob->size = 0;
@@ -48,7 +50,8 @@ namespace Document {
       size_t unit = NODE_HOEDOWN_DEF_UNIT;
       size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;
       size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;
-      int extensions = 0;
+      bool inline_ = false;
+      hoedown_extensions extensions = (hoedown_extensions)0;
       size_t maxNesting = NODE_HOEDOWN_DEF_MAX_NESTING;
       RendererType type = RENDERER_HTML;
       int flags = 0;
@@ -63,7 +66,9 @@ namespace Document {
         NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);
         NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);
 
-        extensions = parseFlags(opts->Get(v8u::Symbol("extensions")));
+        inline_ = v8u::Bool(opts->Get(v8u::Symbol("inline")));
+
+        extensions = (hoedown_extensions)parseFlags(opts->Get(v8u::Symbol("extensions")));
         NODE_HOEDOWN_UNPACK_INT(opts, "maxNesting", maxNesting);
 
         Local<Value> rval = opts->Get(v8u::Symbol("renderer"));
@@ -81,7 +86,7 @@ namespace Document {
         }
       }
 
-      V8_WRAP(new Hoedown(unit, minSize, maxSize, extensions, maxNesting, type, flags, smartypants, tocLevel));
+      V8_WRAP(new Hoedown(unit, minSize, maxSize, inline_, extensions, maxNesting, type, flags, smartypants, tocLevel));
     } V8_CTOR_END()
 
     NODE_TYPE(Hoedown, "hoedown") {
@@ -94,22 +99,22 @@ namespace Document {
     hoedown_renderer* rndr;
     void (*rndr_free)(hoedown_renderer* rndr);
     size_t minSize, maxSize;
+    bool inline_;
 
-    Hoedown(size_t unit, size_t minSiz, size_t maxSiz,
-            int extensions, size_t maxNesting,
+    Hoedown(size_t unit, size_t minSize, size_t maxSize,
+            bool inline_, hoedown_extensions extensions, size_t maxNesting,
             RendererType type,
             int flags, bool smartypants, int tocLevel):
-          minSize(minSiz), maxSize(maxSiz) {
+          minSize(minSize), maxSize(maxSize), inline_(inline_) {
       if (unit < 1) unit = 1;
       if (maxSize < minSize) maxSize = minSize;
 
       ob = hoedown_buffer_new(unit);
-      if (!ob || hoedown_buffer_grow(ob, minSize) != HOEDOWN_BUF_OK)
-        V8_THROW(v8u::Err("No memory."));
+      hoedown_buffer_grow(ob, minSize);
 
       switch (type) {
         case RENDERER_HTML:
-          rndr = hoedown_html_renderer_new(flags, tocLevel);
+          rndr = hoedown_html_renderer_new((hoedown_html_flags)flags, tocLevel);
           rndr_free = &hoedown_html_renderer_free;
           break;
         case RENDERER_HTML_TOC:
@@ -117,34 +122,25 @@ namespace Document {
           rndr_free = &hoedown_html_renderer_free;
           break;
       };
-      if (!rndr)
-        V8_THROW(v8u::Err("No memory."));
 
       doc = hoedown_document_new(rndr, extensions, maxNesting);
-      if (!doc)
-        V8_THROW(v8u::Err("No memory."));
 
       if (smartypants && (type == RENDERER_HTML || type == RENDERER_HTML_TOC)) {
         sp = hoedown_buffer_new(unit);
-        if (!sp || hoedown_buffer_grow(sp, minSize) != HOEDOWN_BUF_OK)
-          V8_THROW(v8u::Err("No memory."));
+        hoedown_buffer_grow(sp, minSize);
       } else sp = NULL;
     }
     ~Hoedown() {
-      if (!ob) return;
       hoedown_buffer_free(ob);
-      if (!rndr) return;
       rndr_free(rndr);
-      if (!doc) return;
       hoedown_document_free(doc);
-      if (!sp) return;
       hoedown_buffer_free(sp);
     }
   }; V8_POST_TYPE(Hoedown);
 
   NODE_DEF(init) {
     V8_HANDLE_SCOPE(scope);
-    
+
     // flags: Extension
     Local<Object> exts = v8u::Obj();
     exts->Set(v8u::Symbol("TABLES"), v8u::Int(HOEDOWN_EXT_TABLES));
@@ -156,9 +152,10 @@ namespace Document {
     exts->Set(v8u::Symbol("HIGHLIGHT"), v8u::Int(HOEDOWN_EXT_HIGHLIGHT));
     exts->Set(v8u::Symbol("QUOTE"), v8u::Int(HOEDOWN_EXT_QUOTE));
     exts->Set(v8u::Symbol("SUPERSCRIPT"), v8u::Int(HOEDOWN_EXT_SUPERSCRIPT));
-    exts->Set(v8u::Symbol("LAX_SPACING"), v8u::Int(HOEDOWN_EXT_LAX_SPACING));
+    exts->Set(v8u::Symbol("MATH"), v8u::Int(HOEDOWN_EXT_MATH));
     exts->Set(v8u::Symbol("NO_INTRA_EMPHASIS"), v8u::Int(HOEDOWN_EXT_NO_INTRA_EMPHASIS));
     exts->Set(v8u::Symbol("SPACE_HEADERS"), v8u::Int(HOEDOWN_EXT_SPACE_HEADERS));
+    exts->Set(v8u::Symbol("MATH_EXPLICIT"), v8u::Int(HOEDOWN_EXT_MATH_EXPLICIT));
     exts->Set(v8u::Symbol("DISABLE_INDENTED_CODE"), v8u::Int(HOEDOWN_EXT_DISABLE_INDENTED_CODE));
     target->Set(v8u::Symbol("Extensions"), exts);
 

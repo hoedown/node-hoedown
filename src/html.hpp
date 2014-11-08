@@ -29,8 +29,6 @@ namespace HTML {
     Local<Object> flags = v8u::Obj();
     flags->Set(v8u::Symbol("SKIP_HTML"), v8u::Int(HOEDOWN_HTML_SKIP_HTML));
     flags->Set(v8u::Symbol("ESCAPE"), v8u::Int(HOEDOWN_HTML_ESCAPE));
-    flags->Set(v8u::Symbol("EXPAND_TABS"), v8u::Int(HOEDOWN_HTML_EXPAND_TABS));
-    flags->Set(v8u::Symbol("SAFELINK"), v8u::Int(HOEDOWN_HTML_SAFELINK));
     flags->Set(v8u::Symbol("HARD_WRAP"), v8u::Int(HOEDOWN_HTML_HARD_WRAP));
     flags->Set(v8u::Symbol("USE_XHTML"), v8u::Int(HOEDOWN_HTML_USE_XHTML));
     target->Set(v8u::Symbol("HTML"), flags);

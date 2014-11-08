@@ -16,7 +16,6 @@ namespace Escape {
       if (ob->asize > obj->maxSize) {
         free(ob->data);
         ob->data = (uint8_t*) malloc(obj->minSize);
-        if (!ob->data) V8_STHROW(v8u::Err("No memory."));
         ob->asize = obj->minSize;
       }
       ob->size = 0;
@@ -59,8 +58,7 @@ namespace Escape {
       if (maxSize < minSize) maxSize = minSize;
 
       ob = hoedown_buffer_new(unit);
-      if (!ob || hoedown_buffer_grow(ob, minSize) != HOEDOWN_BUF_OK)
-        V8_THROW(v8u::Err("No memory."));
+      hoedown_buffer_grow(ob, minSize);
     }
     ~EscapeHTML() {
       hoedown_buffer_free(ob);
