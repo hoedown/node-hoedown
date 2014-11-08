@@ -31,7 +31,7 @@ namespace HTML {
     flags->Set(v8u::Symbol("ESCAPE"), v8u::Int(HOEDOWN_HTML_ESCAPE));
     flags->Set(v8u::Symbol("HARD_WRAP"), v8u::Int(HOEDOWN_HTML_HARD_WRAP));
     flags->Set(v8u::Symbol("USE_XHTML"), v8u::Int(HOEDOWN_HTML_USE_XHTML));
-    target->Set(v8u::Symbol("HTML"), flags);
+    target->Set(v8u::Symbol("Flags"), flags);
 
     // enum: TagType
     Local<Object> tag = v8u::Obj();

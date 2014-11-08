@@ -16,7 +16,6 @@ myRenderer = hoedown {
     type: HTML
     flags: [ HTML.Flags.HARD_WRAP
              HTML.Flags.SKIP_HTML ]
-    smartypants: yes
 }
 
 
@@ -26,8 +25,8 @@ html = myRenderer.do '''
   CoffeeScript is beautiful.
   But Markdown *inside* CoffeeScript is just sublime.
 
-  Look at how simple it is to render custom Markdown ---with smart punctuation!---
-  using Hoedown. You can reuse it multiple times and it's pretty fast...
+  Look at how simple it is to render custom Markdown using Hoedown.
+  You can reuse it multiple times and it's pretty fast...
 
 
   ## The killer part

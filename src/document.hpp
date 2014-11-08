@@ -31,18 +31,6 @@ namespace Document {
       else
         hoedown_document_render(obj->doc, ob, (uint8_t*)*input, input.length());
 
-      if (obj->sp) {
-        ob = obj->sp;
-
-        if (ob->asize > obj->maxSize) {
-          free(ob->data);
-          ob->data = (uint8_t*) malloc(obj->minSize);
-          ob->asize = obj->minSize;
-        }
-        ob->size = 0;
-
-        hoedown_html_smartypants(ob, obj->ob->data, obj->ob->size);
-      }
       return String::New((char*)ob->data, ob->size);
     }
 
@@ -55,7 +43,6 @@ namespace Document {
       size_t maxNesting = NODE_HOEDOWN_DEF_MAX_NESTING;
       RendererType type = RENDERER_HTML;
       int flags = 0;
-      bool smartypants = false;
       int tocLevel = 0;
 
       if (info[0]->IsObject()) {
@@ -81,12 +68,11 @@ namespace Document {
             else V8_THROW(v8u::TypeErr("Unknown renderer type found."));
           }
           flags = parseFlags(rndr->Get(v8u::Symbol("flags")));
-          smartypants = v8u::Bool(rndr->Get(v8u::Symbol("smartypants")));
           tocLevel = v8u::Int(rndr->Get(v8u::Symbol("tocLevel")));
         }
       }
 
-      V8_WRAP(new Hoedown(unit, minSize, maxSize, inline_, extensions, maxNesting, type, flags, smartypants, tocLevel));
+      V8_WRAP(new Hoedown(unit, minSize, maxSize, inline_, extensions, maxNesting, type, flags, tocLevel));
     } V8_CTOR_END()
 
     NODE_TYPE(Hoedown, "hoedown") {
@@ -94,7 +80,6 @@ namespace Document {
     } NODE_TYPE_END()
 
     hoedown_buffer* ob;
-    hoedown_buffer* sp;
     hoedown_document* doc;
     hoedown_renderer* rndr;
     void (*rndr_free)(hoedown_renderer* rndr);
@@ -104,7 +89,7 @@ namespace Document {
     Hoedown(size_t unit, size_t minSize, size_t maxSize,
             bool inline_, hoedown_extensions extensions, size_t maxNesting,
             RendererType type,
-            int flags, bool smartypants, int tocLevel):
+            int flags, int tocLevel):
           minSize(minSize), maxSize(maxSize), inline_(inline_) {
       if (unit < 1) unit = 1;
       if (maxSize < minSize) maxSize = minSize;
@@ -124,17 +109,11 @@ namespace Document {
       };
 
       doc = hoedown_document_new(rndr, extensions, maxNesting);
-
-      if (smartypants && (type == RENDERER_HTML || type == RENDERER_HTML_TOC)) {
-        sp = hoedown_buffer_new(unit);
-        hoedown_buffer_grow(sp, minSize);
-      } else sp = NULL;
     }
     ~Hoedown() {
       hoedown_buffer_free(ob);
       rndr_free(rndr);
       hoedown_document_free(doc);
-      hoedown_buffer_free(sp);
     }
   }; V8_POST_TYPE(Hoedown);
 

@@ -18,8 +18,7 @@ var rendertoc = hoedown({
 
   renderer: {
     type: hoedown.HTML.TOC,
-    tocLevel: toc,
-    smartypants: true
+    tocLevel: toc
   }
 });
 
@@ -30,15 +29,21 @@ var render = hoedown({
   renderer: {
     type: hoedown.HTML,
     flags: hoedown.HTML.Flags.HARD_WRAP,
-    tocLevel: toc,
-    smartypants: true
+    tocLevel: toc
   }
 });
+
+// create HTML SmartyPanter
+var panter = hoedown.HTML.smartypants();
 
 collectInput(process.stdin, function(input) {
   // render both TOC and content
   var tochtml = rendertoc.do(input);
   var html = render.do(input);
+
+  // smartypant them
+  tochtml = panter.do(tochtml);
+  html = panter.do(html);
 
   // output them
   process.stdout.write(tochtml + "\n\n" + html);
