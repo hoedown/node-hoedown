@@ -1,6 +1,3 @@
 [submodule "hoedown"]
 	path = hoedown
 	url = https://github.com/hoedown/hoedown.git
-[submodule "v8u"]
-	path = v8u
-	url = https://github.com/jmendeth/v8u.git
