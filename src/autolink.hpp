@@ -7,6 +7,7 @@
 
 namespace Autolink {
   NAN_METHOD(IsSafe) {
+    NanScope();
     NanUtf8String link (args[0]);
     int result = hoedown_autolink_is_safe((uint8_t*)*link, link.length());
     NanReturnValue(NanNew<Boolean>(result));

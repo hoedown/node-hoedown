@@ -18,8 +18,7 @@ using namespace v8;
     for (size_t i = 0; i < length; i++)                                        \
       nargs[i] = args[i];                                                      \
     NanReturnValue(NanNew(constructor)->GetFunction()->NewInstance(length, nargs));\
-    return;                                                                    \
-  } //FIXME: negative length?
+  } else
 
 #define NODE_HOEDOWN_UNPACK_INT(OBJ, NAME, VAR)                                \
   value = (OBJ)->Get(NanNew(NAME))->IntegerValue();                            \
@@ -59,19 +58,20 @@ using namespace v8;
     }                                                                          \
                                                                                \
     static NAN_METHOD(New) {                                                   \
-      NODE_HOEDOWN_CONSTRUCTOR_START();                                        \
-      size_t unit = NODE_HOEDOWN_DEF_UNIT;                                     \
-      size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;                              \
-      size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;                              \
-      if (args[0]->IsObject()) {                                               \
-        Handle<Object> opts = args[0]->ToObject();                             \
-        int value;                                                             \
-        NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);                           \
-        NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);                 \
-        NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);                 \
+      NODE_HOEDOWN_CONSTRUCTOR_START() {                                       \
+        size_t unit = NODE_HOEDOWN_DEF_UNIT;                                   \
+        size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;                            \
+        size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;                            \
+        if (args[0]->IsObject()) {                                             \
+          Handle<Object> opts = args[0]->ToObject();                           \
+          int value;                                                           \
+          NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);                         \
+          NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);               \
+          NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);               \
+        }                                                                      \
+        (new CPP_NAME(unit, minSize, maxSize))->Wrap(args.This());             \
+        NanReturnThis();                                                       \
       }                                                                        \
-      (new CPP_NAME(unit, minSize, maxSize))->Wrap(args.This());               \
-      NanReturnThis();                                                         \
     }                                                                          \
                                                                                \
     hoedown_buffer* ob;                                                        \
@@ -106,3 +106,7 @@ inline unsigned int parseFlags(Handle<Value> value) {
 }
 
 #endif /* NODE_HOEDOWN_COMMON_HPP */
+
+
+//TODO: docs (mention exception), make all parts safe, commit benchmark & add to travis tests
+//upgrade hoedown

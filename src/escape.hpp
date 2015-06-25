@@ -22,6 +22,7 @@ namespace Escape {
     }
 
     static NAN_METHOD(Do) {
+      NanScope();
       EscapeHTML* obj = Unwrap<EscapeHTML>(args.Holder());
       hoedown_buffer* ob = obj->ob;
       NanUtf8String input (args[0]);
@@ -38,25 +39,26 @@ namespace Escape {
     }
 
     static NAN_METHOD(New) {
-      NODE_HOEDOWN_CONSTRUCTOR_START();
-      size_t unit = NODE_HOEDOWN_DEF_UNIT;
-      size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;
-      size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;
-      bool secure = false;
+      NODE_HOEDOWN_CONSTRUCTOR_START() {
+        size_t unit = NODE_HOEDOWN_DEF_UNIT;
+        size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;
+        size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;
+        bool secure = false;
 
-      if (args[0]->IsObject()) {
-        Local<Object> opts = args[0]->ToObject();
-        int value;
+        if (args[0]->IsObject()) {
+          Local<Object> opts = args[0]->ToObject();
+          int value;
 
-        NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
-        NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);
-        NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);
+          NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
+          NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);
+          NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);
 
-        secure = opts->Get(NanNew("secure"))->BooleanValue();
+          secure = opts->Get(NanNew("secure"))->BooleanValue();
+        }
+
+        (new EscapeHTML(unit, minSize, maxSize, secure))->Wrap(args.This());
+        NanReturnThis();
       }
-
-      (new EscapeHTML(unit, minSize, maxSize, secure))->Wrap(args.This());
-      NanReturnThis();
     }
 
     hoedown_buffer* ob;

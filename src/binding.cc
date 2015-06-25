@@ -10,14 +10,15 @@ namespace Version {
   Persistent<FunctionTemplate> constructor;
 
   NAN_METHOD(New) {
-    NODE_HOEDOWN_CONSTRUCTOR_START();
-    int major = args[0]->IntegerValue();
-    int minor = args[1]->IntegerValue();
-    int revision = args[2]->IntegerValue();
-    args.This()->Set(NanNew("major"), NanNew(major));
-    args.This()->Set(NanNew("minor"), NanNew(minor));
-    args.This()->Set(NanNew("revision"), NanNew(revision));
-    NanReturnThis();
+    NODE_HOEDOWN_CONSTRUCTOR_START() {
+      int major = args[0]->IntegerValue();
+      int minor = args[1]->IntegerValue();
+      int revision = args[2]->IntegerValue();
+      args.This()->Set(NanNew("major"), NanNew(major));
+      args.This()->Set(NanNew("minor"), NanNew(minor));
+      args.This()->Set(NanNew("revision"), NanNew(revision));
+      NanReturnThis();
+    }
   }
 
   NAN_METHOD(Inspect) {

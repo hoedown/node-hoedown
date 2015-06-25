@@ -12,6 +12,7 @@ namespace HTML {
   NODE_HOEDOWN_SIMPLE_HANDLER(Smartypants, "smartypants", hoedown_html_smartypants)
 
   NAN_METHOD(IsTag) {
+    NanScope();
     NanUtf8String html (args[0]);
     NanUtf8String tagname (args[1]);
     NanReturnValue(NanNew(hoedown_html_is_tag((uint8_t*)*html, html.length(), *tagname)));

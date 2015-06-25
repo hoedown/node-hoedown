@@ -49,46 +49,47 @@ namespace Document {
     }
 
     static NAN_METHOD(New) {
-      NODE_HOEDOWN_CONSTRUCTOR_START();
-      size_t unit = NODE_HOEDOWN_DEF_UNIT;
-      size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;
-      size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;
-      bool inline_ = false;
-      hoedown_extensions extensions = (hoedown_extensions)0;
-      size_t maxNesting = NODE_HOEDOWN_DEF_MAX_NESTING;
-      RendererType type = RENDERER_HTML;
-      int flags = 0;
-      int tocLevel = 0;
+      NODE_HOEDOWN_CONSTRUCTOR_START() {
+        size_t unit = NODE_HOEDOWN_DEF_UNIT;
+        size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;
+        size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;
+        bool inline_ = false;
+        hoedown_extensions extensions = (hoedown_extensions)0;
+        size_t maxNesting = NODE_HOEDOWN_DEF_MAX_NESTING;
+        RendererType type = RENDERER_HTML;
+        int flags = 0;
+        int tocLevel = 0;
 
-      if (args[0]->IsObject()) {
-        Local<Object> opts = args[0]->ToObject();
-        int value;
+        if (args[0]->IsObject()) {
+          Local<Object> opts = args[0]->ToObject();
+          int value;
 
-        NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
-        NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);
-        NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);
+          NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
+          NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);
+          NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);
 
-        inline_ = opts->Get(NanNew("inline"))->BooleanValue();
+          inline_ = opts->Get(NanNew("inline"))->BooleanValue();
 
-        extensions = (hoedown_extensions) parseFlags(opts->Get(NanNew("extensions")));
-        NODE_HOEDOWN_UNPACK_INT(opts, "maxNesting", maxNesting);
+          extensions = (hoedown_extensions) parseFlags(opts->Get(NanNew("extensions")));
+          NODE_HOEDOWN_UNPACK_INT(opts, "maxNesting", maxNesting);
 
-        Local<Value> rval = opts->Get(NanNew("renderer"));
-        if (rval->IsObject()) {
-          Local<Object> rndr = rval->ToObject();
-          if (rndr->Has(NanNew("type"))) {
-            Local<Value> jstype = rndr->Get(NanNew("type"));
-            if (jstype == HTML::html) type = RENDERER_HTML;
-            else if (jstype == HTML::html_toc) type = RENDERER_HTML_TOC;
-            else NanThrowTypeError("Unknown renderer type found.");
+          Local<Value> rval = opts->Get(NanNew("renderer"));
+          if (rval->IsObject()) {
+            Local<Object> rndr = rval->ToObject();
+            if (rndr->Has(NanNew("type"))) {
+              Local<Value> jstype = rndr->Get(NanNew("type"));
+              if (jstype == HTML::html) type = RENDERER_HTML;
+              else if (jstype == HTML::html_toc) type = RENDERER_HTML_TOC;
+              else NanThrowTypeError("Unknown renderer type found.");
+            }
+            flags = parseFlags(rndr->Get(NanNew("flags")));
+            tocLevel = rndr->Get(NanNew("tocLevel"))->IntegerValue();
           }
-          flags = parseFlags(rndr->Get(NanNew("flags")));
-          tocLevel = rndr->Get(NanNew("tocLevel"))->IntegerValue();
         }
-      }
 
-      (new Hoedown(unit, minSize, maxSize, inline_, extensions, maxNesting, type, flags, tocLevel))->Wrap(args.This());
-      NanReturnThis();
+        (new Hoedown(unit, minSize, maxSize, inline_, extensions, maxNesting, type, flags, tocLevel))->Wrap(args.This());
+        NanReturnThis();
+      }
     }
 
     hoedown_buffer* ob;
