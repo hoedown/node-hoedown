@@ -17,5 +17,10 @@
 
     # Flags and defines
     'cflags': ['-Wall','-Wextra','-Wno-unused-parameter','-O3'],
+
+    # NAN
+    'include_dirs': [
+      "<!(node -e \"require('nan')\")"
+    ]
   }]
 }
