@@ -6,39 +6,41 @@
 #include "hoedown/autolink.h"
 
 namespace Autolink {
-  V8_SCB(IsSafe) {
-    String::Utf8Value link (info[0]);
-    return v8u::Bool(hoedown_autolink_is_safe((uint8_t*)*link, link.length()));
+  NAN_METHOD(IsSafe) {
+    NanUtf8String link (args[0]);
+    int result = hoedown_autolink_is_safe((uint8_t*)*link, link.length());
+    NanReturnValue(NanNew<Boolean>(result));
   }
-  
+
   struct AutolinkData {
     size_t (*func)(size_t* rewind_p, hoedown_buffer* link, uint8_t* data, size_t offset, size_t size, unsigned int flags);
     unsigned int flags;
   };
-  
-  V8_SCB(Autolink) {
+
+  NAN_METHOD(Autolink) {
     //TODO
+    NanReturnUndefined();
   }
-  
-  V8_SCB(AutolinkCall) {
+
+  NAN_METHOD(AutolinkCall) {
     //TODO
+    NanReturnUndefined();
   }
-  
+
   //TODO: destructor
 
-  NODE_DEF(init) {
-    V8_HANDLE_SCOPE(scope);
-    
+  void init(Handle<Object> target) {
     // autolink function (and namespace)
-    target = v8u::SetMethod(target, &Autolink, "autolink");
-    
+    NODE_SET_METHOD(target, "autolink", Autolink);
+    target = target->Get(NanNew("autolink"))->ToObject();
+
     // flags: Flags
-    Local<Object> flags = v8u::Obj();
-    flags->Set(v8u::Symbol("SHORT_DOMAINS"), v8u::Int(HOEDOWN_AUTOLINK_SHORT_DOMAINS));
-    target->Set(v8u::Symbol("Flags"), flags);
+    Local<Object> flags = NanNew<Object>();
+    flags->Set(NanNew("SHORT_DOMAINS"), NanNew(HOEDOWN_AUTOLINK_SHORT_DOMAINS));
+    target->Set(NanNew("Flags"), flags);
 
     // other methods
-    v8u::SetMethod(target, &IsSafe, "isSafe");
+    NODE_SET_METHOD(target, "isSafe", IsSafe);
   }
 }
 

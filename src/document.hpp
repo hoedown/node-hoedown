@@ -11,13 +11,27 @@ namespace Document {
     RENDERER_HTML,
     RENDERER_HTML_TOC,
   };
-  
+
   class Hoedown : public node::ObjectWrap {
   public:
-    static V8_SCB(Do) {
-      Hoedown* obj = (Hoedown*) info.This()->GetPointerFromInternalField(0);
+    static Persistent<FunctionTemplate> constructor;
+    static void init(Handle<Object> target) {
+      Local<String> name = NanNew("Hoedown");
+      Local<FunctionTemplate> tpl = NanNew<FunctionTemplate>(New);
+      NanAssignPersistent(constructor, tpl);
+      tpl->SetClassName(name);
+      tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+      NODE_SET_PROTOTYPE_METHOD(tpl, "do", Do);
+
+      target->Set(name, tpl->GetFunction());
+    }
+
+    static NAN_METHOD(Do) {
+      NanScope();
+      Hoedown* obj = Unwrap<Hoedown>(args.Holder());
       hoedown_buffer* ob = obj->ob;
-      String::Utf8Value input (info[0]);
+      NanUtf8String input (args[0]);
 
       if (ob->asize > obj->maxSize) {
         free(ob->data);
@@ -31,10 +45,11 @@ namespace Document {
       else
         hoedown_document_render(obj->doc, ob, (uint8_t*)*input, input.length());
 
-      return String::New((char*)ob->data, ob->size);
+      NanReturnValue(NanNew<String>((char*)ob->data, ob->size));
     }
 
-    V8_CTOR() {
+    static NAN_METHOD(New) {
+      NODE_HOEDOWN_CONSTRUCTOR_START();
       size_t unit = NODE_HOEDOWN_DEF_UNIT;
       size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;
       size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;
@@ -45,39 +60,36 @@ namespace Document {
       int flags = 0;
       int tocLevel = 0;
 
-      if (info[0]->IsObject()) {
-        Local<Object> opts = v8u::Obj(info[0]);
+      if (args[0]->IsObject()) {
+        Local<Object> opts = args[0]->ToObject();
         int value;
 
         NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
         NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);
         NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);
 
-        inline_ = v8u::Bool(opts->Get(v8u::Symbol("inline")));
+        inline_ = opts->Get(NanNew("inline"))->BooleanValue();
 
-        extensions = (hoedown_extensions)parseFlags(opts->Get(v8u::Symbol("extensions")));
+        extensions = (hoedown_extensions) parseFlags(opts->Get(NanNew("extensions")));
         NODE_HOEDOWN_UNPACK_INT(opts, "maxNesting", maxNesting);
 
-        Local<Value> rval = opts->Get(v8u::Symbol("renderer"));
+        Local<Value> rval = opts->Get(NanNew("renderer"));
         if (rval->IsObject()) {
-          Local<Object> rndr = v8u::Obj(rval);
-          if (rndr->Has(v8u::Symbol("type"))) {
-            Local<Value> jstype = rndr->Get(v8u::Symbol("type"));
+          Local<Object> rndr = rval->ToObject();
+          if (rndr->Has(NanNew("type"))) {
+            Local<Value> jstype = rndr->Get(NanNew("type"));
             if (jstype == HTML::html) type = RENDERER_HTML;
             else if (jstype == HTML::html_toc) type = RENDERER_HTML_TOC;
-            else V8_THROW(v8u::TypeErr("Unknown renderer type found."));
+            else NanThrowTypeError("Unknown renderer type found.");
           }
-          flags = parseFlags(rndr->Get(v8u::Symbol("flags")));
-          tocLevel = v8u::Int(rndr->Get(v8u::Symbol("tocLevel")));
+          flags = parseFlags(rndr->Get(NanNew("flags")));
+          tocLevel = rndr->Get(NanNew("tocLevel"))->IntegerValue();
         }
       }
 
-      V8_WRAP(new Hoedown(unit, minSize, maxSize, inline_, extensions, maxNesting, type, flags, tocLevel));
-    } V8_CTOR_END()
-
-    NODE_TYPE(Hoedown, "hoedown") {
-      V8_DEF_CB("do", Do);
-    } NODE_TYPE_END()
+      (new Hoedown(unit, minSize, maxSize, inline_, extensions, maxNesting, type, flags, tocLevel))->Wrap(args.This());
+      NanReturnThis();
+    }
 
     hoedown_buffer* ob;
     hoedown_document* doc;
@@ -115,56 +127,55 @@ namespace Document {
       rndr_free(rndr);
       hoedown_document_free(doc);
     }
-  }; V8_POST_TYPE(Hoedown);
+  };
+  Persistent<FunctionTemplate> Hoedown::constructor;
 
-  NODE_DEF(init) {
-    V8_HANDLE_SCOPE(scope);
-
+  void init(Handle<Object> target) {
     // flags: Extension
-    Local<Object> exts = v8u::Obj();
-    exts->Set(v8u::Symbol("TABLES"), v8u::Int(HOEDOWN_EXT_TABLES));
-    exts->Set(v8u::Symbol("FENCED_CODE"), v8u::Int(HOEDOWN_EXT_FENCED_CODE));
-    exts->Set(v8u::Symbol("FOOTNOTES"), v8u::Int(HOEDOWN_EXT_FOOTNOTES));
-    exts->Set(v8u::Symbol("AUTOLINK"), v8u::Int(HOEDOWN_EXT_AUTOLINK));
-    exts->Set(v8u::Symbol("STRIKETHROUGH"), v8u::Int(HOEDOWN_EXT_STRIKETHROUGH));
-    exts->Set(v8u::Symbol("UNDERLINE"), v8u::Int(HOEDOWN_EXT_UNDERLINE));
-    exts->Set(v8u::Symbol("HIGHLIGHT"), v8u::Int(HOEDOWN_EXT_HIGHLIGHT));
-    exts->Set(v8u::Symbol("QUOTE"), v8u::Int(HOEDOWN_EXT_QUOTE));
-    exts->Set(v8u::Symbol("SUPERSCRIPT"), v8u::Int(HOEDOWN_EXT_SUPERSCRIPT));
-    exts->Set(v8u::Symbol("MATH"), v8u::Int(HOEDOWN_EXT_MATH));
-    exts->Set(v8u::Symbol("NO_INTRA_EMPHASIS"), v8u::Int(HOEDOWN_EXT_NO_INTRA_EMPHASIS));
-    exts->Set(v8u::Symbol("SPACE_HEADERS"), v8u::Int(HOEDOWN_EXT_SPACE_HEADERS));
-    exts->Set(v8u::Symbol("MATH_EXPLICIT"), v8u::Int(HOEDOWN_EXT_MATH_EXPLICIT));
-    exts->Set(v8u::Symbol("DISABLE_INDENTED_CODE"), v8u::Int(HOEDOWN_EXT_DISABLE_INDENTED_CODE));
-    target->Set(v8u::Symbol("Extensions"), exts);
+    Local<Object> exts = NanNew<Object>();
+    exts->Set(NanNew("TABLES"), NanNew(HOEDOWN_EXT_TABLES));
+    exts->Set(NanNew("FENCED_CODE"), NanNew(HOEDOWN_EXT_FENCED_CODE));
+    exts->Set(NanNew("FOOTNOTES"), NanNew(HOEDOWN_EXT_FOOTNOTES));
+    exts->Set(NanNew("AUTOLINK"), NanNew(HOEDOWN_EXT_AUTOLINK));
+    exts->Set(NanNew("STRIKETHROUGH"), NanNew(HOEDOWN_EXT_STRIKETHROUGH));
+    exts->Set(NanNew("UNDERLINE"), NanNew(HOEDOWN_EXT_UNDERLINE));
+    exts->Set(NanNew("HIGHLIGHT"), NanNew(HOEDOWN_EXT_HIGHLIGHT));
+    exts->Set(NanNew("QUOTE"), NanNew(HOEDOWN_EXT_QUOTE));
+    exts->Set(NanNew("SUPERSCRIPT"), NanNew(HOEDOWN_EXT_SUPERSCRIPT));
+    exts->Set(NanNew("MATH"), NanNew(HOEDOWN_EXT_MATH));
+    exts->Set(NanNew("NO_INTRA_EMPHASIS"), NanNew(HOEDOWN_EXT_NO_INTRA_EMPHASIS));
+    exts->Set(NanNew("SPACE_HEADERS"), NanNew(HOEDOWN_EXT_SPACE_HEADERS));
+    exts->Set(NanNew("MATH_EXPLICIT"), NanNew(HOEDOWN_EXT_MATH_EXPLICIT));
+    exts->Set(NanNew("DISABLE_INDENTED_CODE"), NanNew(HOEDOWN_EXT_DISABLE_INDENTED_CODE));
+    target->Set(NanNew("Extensions"), exts);
 
     // extension categories
-    target->Set(v8u::Symbol("EXT_BLOCK"), v8u::Int(HOEDOWN_EXT_BLOCK));
-    target->Set(v8u::Symbol("EXT_SPAN"), v8u::Int(HOEDOWN_EXT_SPAN));
-    target->Set(v8u::Symbol("EXT_FLAGS"), v8u::Int(HOEDOWN_EXT_FLAGS));
-    target->Set(v8u::Symbol("EXT_NEGATIVE"), v8u::Int(HOEDOWN_EXT_NEGATIVE));
+    target->Set(NanNew("EXT_BLOCK"), NanNew(HOEDOWN_EXT_BLOCK));
+    target->Set(NanNew("EXT_SPAN"), NanNew(HOEDOWN_EXT_SPAN));
+    target->Set(NanNew("EXT_FLAGS"), NanNew(HOEDOWN_EXT_FLAGS));
+    target->Set(NanNew("EXT_NEGATIVE"), NanNew(HOEDOWN_EXT_NEGATIVE));
 
     // flags: ListFlags
-    Local<Object> listflags = v8u::Obj();
-    listflags->Set(v8u::Symbol("LIST_ORDERED"), v8u::Int(HOEDOWN_LIST_ORDERED));
-    listflags->Set(v8u::Symbol("LI_BLOCK"), v8u::Int(HOEDOWN_LI_BLOCK));
-    target->Set(v8u::Symbol("ListFlags"), listflags);
+    Local<Object> listflags = NanNew<Object>();
+    listflags->Set(NanNew("LIST_ORDERED"), NanNew(HOEDOWN_LIST_ORDERED));
+    listflags->Set(NanNew("LI_BLOCK"), NanNew(HOEDOWN_LI_BLOCK));
+    target->Set(NanNew("ListFlags"), listflags);
 
     // flags: TableFlags
-    Local<Object> tableflags = v8u::Obj();
-    tableflags->Set(v8u::Symbol("ALIGN_LEFT"), v8u::Int(HOEDOWN_TABLE_ALIGN_LEFT));
-    tableflags->Set(v8u::Symbol("ALIGN_RIGHT"), v8u::Int(HOEDOWN_TABLE_ALIGN_RIGHT));
-    tableflags->Set(v8u::Symbol("ALIGN_CENTER"), v8u::Int(HOEDOWN_TABLE_ALIGN_CENTER));
-    tableflags->Set(v8u::Symbol("ALIGNMASK"), v8u::Int(HOEDOWN_TABLE_ALIGNMASK));
-    tableflags->Set(v8u::Symbol("HEADER"), v8u::Int(HOEDOWN_TABLE_HEADER));
-    target->Set(v8u::Symbol("TableFlags"), tableflags);
-    
+    Local<Object> tableflags = NanNew<Object>();
+    tableflags->Set(NanNew("ALIGN_LEFT"), NanNew(HOEDOWN_TABLE_ALIGN_LEFT));
+    tableflags->Set(NanNew("ALIGN_RIGHT"), NanNew(HOEDOWN_TABLE_ALIGN_RIGHT));
+    tableflags->Set(NanNew("ALIGN_CENTER"), NanNew(HOEDOWN_TABLE_ALIGN_CENTER));
+    tableflags->Set(NanNew("ALIGNMASK"), NanNew(HOEDOWN_TABLE_ALIGNMASK));
+    tableflags->Set(NanNew("HEADER"), NanNew(HOEDOWN_TABLE_HEADER));
+    target->Set(NanNew("TableFlags"), tableflags);
+
     // enum: AutolinkType
-    Local<Object> autolink = v8u::Obj();
-    autolink->Set(v8u::Symbol("NONE"), v8u::Int(HOEDOWN_AUTOLINK_NONE));
-    autolink->Set(v8u::Symbol("NORMAL"), v8u::Int(HOEDOWN_AUTOLINK_NORMAL));
-    autolink->Set(v8u::Symbol("EMAIL"), v8u::Int(HOEDOWN_AUTOLINK_EMAIL));
-    target->Set(v8u::Symbol("AutolinkType"), autolink);
+    Local<Object> autolink = NanNew<Object>();
+    autolink->Set(NanNew("NONE"), NanNew(HOEDOWN_AUTOLINK_NONE));
+    autolink->Set(NanNew("NORMAL"), NanNew(HOEDOWN_AUTOLINK_NORMAL));
+    autolink->Set(NanNew("EMAIL"), NanNew(HOEDOWN_AUTOLINK_EMAIL));
+    target->Set(NanNew("AutolinkType"), autolink);
   }
 }
 

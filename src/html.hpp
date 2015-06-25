@@ -10,43 +10,43 @@ namespace HTML {
   Persistent<Object> html_toc;
 
   NODE_HOEDOWN_SIMPLE_HANDLER(Smartypants, "smartypants", hoedown_html_smartypants)
-  
-  V8_SCB(IsTag) {
-    String::Utf8Value html (info[0]);
-    String::Utf8Value tagname (info[1]);
-    return v8u::Int(hoedown_html_is_tag((uint8_t*)*html, html.length(), *tagname));
+
+  NAN_METHOD(IsTag) {
+    NanUtf8String html (args[0]);
+    NanUtf8String tagname (args[1]);
+    NanReturnValue(NanNew(hoedown_html_is_tag((uint8_t*)*html, html.length(), *tagname)));
   }
 
-  NODE_DEF(init) {
-    V8_HANDLE_SCOPE(scope);
-    
+  void init(Handle<Object> target) {
     // HTML renderer (and namespace)
-    html = v8u::Persist(v8u::Obj());
-    target->Set(v8u::Symbol("HTML"), html);
+    Local<Object> html = NanNew<Object>();
+    NanAssignPersistent(HTML::html, html);
+    target->Set(NanNew("HTML"), html);
     target = html;
 
     // flags: Flags
-    Local<Object> flags = v8u::Obj();
-    flags->Set(v8u::Symbol("SKIP_HTML"), v8u::Int(HOEDOWN_HTML_SKIP_HTML));
-    flags->Set(v8u::Symbol("ESCAPE"), v8u::Int(HOEDOWN_HTML_ESCAPE));
-    flags->Set(v8u::Symbol("HARD_WRAP"), v8u::Int(HOEDOWN_HTML_HARD_WRAP));
-    flags->Set(v8u::Symbol("USE_XHTML"), v8u::Int(HOEDOWN_HTML_USE_XHTML));
-    target->Set(v8u::Symbol("Flags"), flags);
+    Local<Object> flags = NanNew<Object>();
+    flags->Set(NanNew("SKIP_HTML"), NanNew(HOEDOWN_HTML_SKIP_HTML));
+    flags->Set(NanNew("ESCAPE"), NanNew(HOEDOWN_HTML_ESCAPE));
+    flags->Set(NanNew("HARD_WRAP"), NanNew(HOEDOWN_HTML_HARD_WRAP));
+    flags->Set(NanNew("USE_XHTML"), NanNew(HOEDOWN_HTML_USE_XHTML));
+    target->Set(NanNew("Flags"), flags);
 
     // enum: TagType
-    Local<Object> tag = v8u::Obj();
-    tag->Set(v8u::Symbol("NONE"), v8u::Int(HOEDOWN_HTML_TAG_NONE));
-    tag->Set(v8u::Symbol("OPEN"), v8u::Int(HOEDOWN_HTML_TAG_OPEN));
-    tag->Set(v8u::Symbol("CLOSE"), v8u::Int(HOEDOWN_HTML_TAG_CLOSE));
-    target->Set(v8u::Symbol("TagType"), tag);
+    Local<Object> tag = NanNew<Object>();
+    tag->Set(NanNew("NONE"), NanNew(HOEDOWN_HTML_TAG_NONE));
+    tag->Set(NanNew("OPEN"), NanNew(HOEDOWN_HTML_TAG_OPEN));
+    tag->Set(NanNew("CLOSE"), NanNew(HOEDOWN_HTML_TAG_CLOSE));
+    target->Set(NanNew("TagType"), tag);
 
     // HTML TOC renderer
-    html_toc = v8u::Persist(v8u::Obj());
-    target->Set(v8u::Symbol("TOC"), html_toc);
+    Local<Object> html_toc = NanNew<Object>();
+    NanAssignPersistent(HTML::html_toc, html_toc);
+    target->Set(NanNew("TOC"), html_toc);
 
     // other methods
     Smartypants::init(target);
-    v8u::SetMethod(target, &IsTag, "isTag");
+    NODE_SET_METHOD(target, "isTag", IsTag);
   }
 }
 

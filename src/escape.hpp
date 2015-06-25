@@ -8,10 +8,23 @@
 namespace Escape {
   class EscapeHTML : public node::ObjectWrap {
   public:
-    static V8_SCB(Do) {
-      EscapeHTML* obj = (EscapeHTML*) info.This()->GetPointerFromInternalField(0);
+    static Persistent<FunctionTemplate> constructor;
+    static void init(Handle<Object> target) {
+      Local<String> name = NanNew("escapeHTML");
+      Local<FunctionTemplate> tpl = NanNew<FunctionTemplate>(New);
+      NanAssignPersistent(constructor, tpl);
+      tpl->SetClassName(name);
+      tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+      NODE_SET_PROTOTYPE_METHOD(tpl, "do", Do);
+
+      target->Set(name, tpl->GetFunction());
+    }
+
+    static NAN_METHOD(Do) {
+      EscapeHTML* obj = Unwrap<EscapeHTML>(args.Holder());
       hoedown_buffer* ob = obj->ob;
-      String::Utf8Value input (info[0]);
+      NanUtf8String input (args[0]);
 
       if (ob->asize > obj->maxSize) {
         free(ob->data);
@@ -21,32 +34,30 @@ namespace Escape {
       ob->size = 0;
 
       hoedown_escape_html(ob, (uint8_t*)*input, input.length(), obj->secure);
-      return String::New((char*)ob->data, ob->size);
+      NanReturnValue(NanNew<String>((char*)ob->data, ob->size));
     }
 
-    V8_CTOR() {
+    static NAN_METHOD(New) {
+      NODE_HOEDOWN_CONSTRUCTOR_START();
       size_t unit = NODE_HOEDOWN_DEF_UNIT;
       size_t minSize = NODE_HOEDOWN_DEF_MIN_SIZE;
       size_t maxSize = NODE_HOEDOWN_DEF_MAX_SIZE;
       bool secure = false;
 
-      if (info[0]->IsObject()) {
-        Local<Object> opts = v8u::Obj(info[0]);
+      if (args[0]->IsObject()) {
+        Local<Object> opts = args[0]->ToObject();
         int value;
 
         NODE_HOEDOWN_UNPACK_INT(opts, "unit", unit);
         NODE_HOEDOWN_UNPACK_INT(opts, "minimumSize", minSize);
         NODE_HOEDOWN_UNPACK_INT(opts, "maximumSize", maxSize);
 
-        secure = v8u::Bool(opts->Get(v8u::Symbol("secure")));
+        secure = opts->Get(NanNew("secure"))->BooleanValue();
       }
 
-      V8_WRAP(new EscapeHTML(unit, minSize, maxSize, secure));
-    } V8_CTOR_END()
-
-    NODE_TYPE(EscapeHTML, "escapeHTML") {
-      V8_DEF_CB("do", Do);
-    } NODE_TYPE_END()
+      (new EscapeHTML(unit, minSize, maxSize, secure))->Wrap(args.This());
+      NanReturnThis();
+    }
 
     hoedown_buffer* ob;
     bool secure;
@@ -63,13 +74,12 @@ namespace Escape {
     ~EscapeHTML() {
       hoedown_buffer_free(ob);
     }
-  }; V8_POST_TYPE(EscapeHTML);
+  };
+  Persistent<FunctionTemplate> EscapeHTML::constructor;
 
   NODE_HOEDOWN_SIMPLE_HANDLER(EscapeHref, "escapeHref", hoedown_escape_href)
 
-  NODE_DEF(init) {
-    V8_HANDLE_SCOPE(scope);
-
+  void init(Handle<Object> target) {
     EscapeHTML::init(target);
     EscapeHref::init(target);
   }
