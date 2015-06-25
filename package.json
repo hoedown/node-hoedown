@@ -24,7 +24,5 @@
                 }
 , "bugs": { "url": "https://github.com/hoedown/node-hoedown/issues" }
 
-, "licenses": [ { "type": "MIT",
-                  "url": "http://opensource.org/licenses/mit-license.php" }
-              ]
+, "license": "MIT"
 }
