@@ -11,6 +11,7 @@
                   ]
 
 , "dependencies": { "nan": "1"
+                  , "bindings": "1"
                   }
 , "engines": { "node": ">= 0.10" }
 , "directories": { "src": "src"

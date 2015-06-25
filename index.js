@@ -1,1 +1,2 @@
-module.exports = require("./build/Release/hoedown").hoedown;
+var bindings = require("bindings")("hoedown");
+module.exports = bindings.Hoedown;
